@@ -11,7 +11,6 @@ public class Payoffs : MonoBehaviour
 
     public int[,] intPayoffs;
 
-    enum Bandit { Red, Green, Blue, Yellow };
 
     private void Awake()
     {
@@ -36,20 +35,9 @@ public class Payoffs : MonoBehaviour
                     Debug.LogError("Failed to parse value at row " + (i + 1) + ", column " + (j + 1));
                 }
             }
-        }
+        }  
+      
     }
 
 
-
-//// Start is called before the first frame update
-//void Start()
-//    {
-        
-//    }
-
-//    // Update is called once per frame
-//    void Update()
-//    {
-        
-//    }
 }

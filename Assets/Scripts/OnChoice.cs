@@ -1,40 +1,97 @@
-using System.Collections;
-using System.Collections.Generic;
+//using System.Collections;
+//using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 
 public class OnChoice : MonoBehaviour
 {
-    // Awake is called before script is enabled
 
-    public TextMeshProUGUI alert;
+    public GameManager GameManager;
 
+    public bool isChosen = false;
+    public Sprite chosenBanditSprite;
+
+    // set following in inspector 
     private string banditName;
-    private int[] listylist;
-    private int indexer; 
+    private SpriteRenderer spriteRenderer;
+    private Sprite banditSprite;
+
+    //just for checking animation, delete & within update & onMouseDown 
+    private float elapsed_time;
+
 
     private void Awake()
+        //get bandit name & original sprite 
     {
-        Debug.Log(gameObject.name);
-        listylist = new int[] { 1,2,3,4,5,6};
-        indexer = 0; 
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        Debug.Log("On Start");
-        alert.text = "ON START";
-
         banditName = gameObject.name;
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        banditSprite = spriteRenderer.sprite;
     }
 
-    // Update is called once per frame
+    void Update()
+    {     
+        // Only run following IF bandit has been clicked
+        // May not actually use but may use idk
+        // actually may well use but may well not 
+        if (isChosen)
+        {
+            
+
+            // not real; to test sprite change & animation 
+            elapsed_time += Time.deltaTime;
+            if (elapsed_time > 4) {
+
+                ResetChoice();
+
+            }
+        }
+    }
+
+    // On click, we set 'isChosen' to true
+    // //(& should/ coul gamecontroller listens for this)
+    // May do this, IDK; or may try pattern as in FlappyBird Tut 
+    //GameManager.Instance.ObjectClicked(gameObject); 
     void OnMouseDown()
+        // when bandit is selected... 
 
     {
-        Debug.Log(banditName);
-        alert.text = "You chose " + banditName + " you win " + listylist[indexer].ToString();
-        indexer++; 
+        // ...set bool ifChosen to true
+        isChosen = true;
+
+        GameManager.BanditClicked(banditName);
+       
+        // ...change the sprite to 'chosen' version
+        spriteRenderer.sprite = chosenBanditSprite;
+        // ...rotate it to give appearance of animation
+        InvokeRepeating("RotateSprite", 0.2f, 0.4f);
+        // ...begin counter for testing 
+        elapsed_time = 0f;
     }
+
+    public void ResetChoice()
+        // method to reset the bandit to unchosen state
+    {
+        // ...reset isChosen 
+        isChosen = false;
+        // ...and reset the sprite
+        ResetSprite();
+        
+    }
+
+    private void RotateSprite()
+        // method to rotate the sprite (appearance of animation)
+    {
+        transform.Rotate(Vector3.back * -90);
+    } 
+
+    private void ResetSprite()
+        // method to reset the sprite to unchosen state 
+    {
+
+        CancelInvoke("RotateSprite");
+        transform.up = Vector3.up;
+        spriteRenderer.sprite = banditSprite;
+  
+    }
+  
+
 }
