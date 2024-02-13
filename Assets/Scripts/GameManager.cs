@@ -9,43 +9,106 @@ enum Bandits { Red, Green, Blue, Yellow };
 
 public class GameManager : MonoBehaviour
 
+
+    //TODO delete payoffs object and payoffs script not needed
+    //TODO make as much of below local as possible 
+
      
 {
     // payoff variables 
     public TextAsset payoffsFile; // assigned in inspector
-    private int[,] intPayoffs;  // filled by ***
+    private int[,] intPayoffs;  // filled by *** (check order; make new fn to deal with this)
 
-    // 'interaction' vars (displaying either finish this thought) 
+    // ::: TASK VARS ::: (ideally set in GUI) 
+    private int currentTrial = 0;
+    private int currentSession = 0;
+    public int trialsPerSession = 3;
+    public int sessionsPerTask = 2;
+
+
+    // 'interaction' vars (displaying prizes; failed trials & task progress ) 
     public TextMeshProUGUI progress;
     public TextMeshProUGUI alert;
     public GameObject failedTrial;
 
+    public GameObject placeHolderSquare; // placeholder for the clearscreen 
+
+    // ::: TRIAL VARS :::
+
+    // trial flag 
+    private bool inTrial = false;
+    private bool fail = false; 
+
+    // timers 
+    public float taskTimer = 0f;
+    private float animateTime = 3.0f;
+    private float prizeDisplayTime = 1.0f;
+    private float timeLimit = 1.5f;
+    private float failDisplayTime = 4.2f;
+
+    // choice vars 
+    public bool choiceMade = false;
+    Bandits chosenBandit;
 
 
-    private int nn = 0;
-    // gui info public vars 
+    [ContextMenu("StartTrial")]
+    public void StartTrial()
+    {
+        NextTrial();
+        UpdateProgress(currentTrial, currentSession);
+        taskTimer = 0f;
+        inTrial = true;
+    }
 
+    public void Update()
+    {
+        // only execute following if we are in a trial and choice is not made
+        if (inTrial && !choiceMade)
+        {
+            taskTimer += Time.deltaTime;
+            if (taskTimer>= timeLimit)
+            {
+                inTrial = false; 
+                StartCoroutine(FailTrial());
+            }
+        }
+    }
 
-    
-    //public GameObject payoffs;
+    IEnumerator FailTrial()
+    {
+        // display the fail signal
+        failedTrial.SetActive(true);
+        // Wait for 4.2 seconds
+        yield return new WaitForSeconds(failDisplayTime);
 
-    private int currentTrial = 1;
-    private int currentSession = 1;
-    public int trialsPerSession = 3;
-    public int sessionsPerTask = 2;
+        // move to a 'reset everything' function 
+        failedTrial.SetActive(false);
+    }
 
-    //assign the bandits as refs I guess 
-    //public GameObject[] bandits;
+    public void EndTrial()
+    {
+        failedTrial.SetActive(false);
+        alert.text = " "; 
 
+        // clear prize award
+        // clear eerything
+        // black screen 
+    }
 
-    [ContextMenu("NextTrial")]
+    public void ClearChoice()
+    {
+        choiceMade = false;
+    }
+
+ 
+
     private void NextTrial()
     {
         if (currentTrial == trialsPerSession) //start new session 
         {
             if (currentSession == sessionsPerTask) // end the game 
             {
-                Debug.Log("End Game: Offer a Reset");
+                Debug.Log("End Game: Offer a Reset?");
             } else
                 // next Session (reset current trial to 0)
             {
@@ -60,43 +123,22 @@ public class GameManager : MonoBehaviour
             currentTrial++;
         }
 
-        UpdateProgress(currentTrial, currentSession);
-
     }
 
     private void Start()
+        // On start, the current trial/ session needs to be displayed 
     {
 
         UpdateProgress(currentTrial, currentSession);
 
     }
 
-    public void BanditClicked(string banditName)
-
-    {
-        Bandits bandit;
-
-        if (Bandits.TryParse<Bandits>(banditName, out bandit))
-        {
-            // Successfully parsed the banditName into an enum value
-            // Now you can use the 'bandit' variable to determine which bandit was clicked
-            Debug.Log("Clicked bandit: " + bandit);
-        }
-        else
-        {
-            Debug.LogWarning("Invalid bandit name: " + banditName);
-        }
-    }
  
 
     [ContextMenu("Win")]
     public void Trial()
     {
-        currentTrial++;
-
-        UpdateProgress(currentTrial, currentSession);
-
-
+      
         // if failedtrial = false (or completed; more logically)
         // this probs needs to be in update 
         int prizeVal = Random.Range(1, 600);
@@ -107,38 +149,41 @@ public class GameManager : MonoBehaviour
 
     }
 
-    [ContextMenu("Fail")]
-    private void FailedTrial()
+    
+
+
+    public void BanditChoice(string banditName)
+    // called from the 'OnChoice' scripts attached to the bandits 
+
     {
-        bool isFail = true;
-        if (isFail)
-            {
-            Debug.Log(isFail);
-            failedTrial.SetActive(isFail);
+        choiceMade = true;
+
+        // parsing the chosen bandit into an enum value 
+        Bandits bandit;
+
+        if (Bandits.TryParse<Bandits>(banditName, out bandit))
+        {
+            // Parse the clicked GameObject name (banditName) into an enum value
+
+
+            Debug.Log("Clicked bandit: " + bandit);
+        }
+        else
+        {
+            Debug.LogWarning("Invalid bandit name: " + banditName);
         }
 
-    }
+        chosenBandit = bandit;
 
-    [ContextMenu("PayoffsInGS")]
-    private void PayoffsCheck()
-    {
-      
-
-        Debug.Log("Col 0 " + intPayoffs[nn, 0].ToString());
-        Debug.Log("Col 1 " + intPayoffs[nn, 1].ToString());
-        Debug.Log("Col 2 " + intPayoffs[nn, 2].ToString());
-        Debug.Log("Col 3 " + intPayoffs[nn, 3]. ToString());
-
-        nn++;
     }
 
 
+    // GUI update functions 
 
     private void UpdatePrizeAlert(int prizeVal)
     {
         alert.text = "You Win " + prizeVal.ToString();
     }
-
 
     private void UpdateProgress(int currentTrial, int currentSession)
     {

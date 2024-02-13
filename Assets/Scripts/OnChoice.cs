@@ -8,6 +8,7 @@ public class OnChoice : MonoBehaviour
     public GameManager GameManager;
 
     public bool isChosen = false;
+    private bool ifChosenFromGM = false; 
     public Sprite chosenBanditSprite;
 
     // set following in inspector 
@@ -30,12 +31,9 @@ public class OnChoice : MonoBehaviour
     void Update()
     {     
         // Only run following IF bandit has been clicked
-        // May not actually use but may use idk
-        // actually may well use but may well not 
-        if (isChosen)
+        // May not actually use 
+        if (ifChosenFromGM)
         {
-            
-
             // not real; to test sprite change & animation 
             elapsed_time += Time.deltaTime;
             if (elapsed_time > 4) {
@@ -46,25 +44,25 @@ public class OnChoice : MonoBehaviour
         }
     }
 
-    // On click, we set 'isChosen' to true
-    // //(& should/ coul gamecontroller listens for this)
-    // May do this, IDK; or may try pattern as in FlappyBird Tut 
-    //GameManager.Instance.ObjectClicked(gameObject); 
     void OnMouseDown()
         // when bandit is selected... 
-
     {
+        // alert GameManager that this Bandit is clicked 
+        GameManager.BanditChoice(banditName);
+
+
+
+        // locally ....
+        ifChosenFromGM = GameManager.choiceMade;
         // ...set bool ifChosen to true
         isChosen = true;
-
-        GameManager.BanditClicked(banditName);
-       
         // ...change the sprite to 'chosen' version
         spriteRenderer.sprite = chosenBanditSprite;
         // ...rotate it to give appearance of animation
         InvokeRepeating("RotateSprite", 0.2f, 0.4f);
-        // ...begin counter for testing 
+        // ...begin counter for testing - REMOVE ME 
         elapsed_time = 0f;
+        Debug.Log(ifChosenFromGM);
     }
 
     public void ResetChoice()
@@ -78,7 +76,7 @@ public class OnChoice : MonoBehaviour
     }
 
     private void RotateSprite()
-        // method to rotate the sprite (appearance of animation)
+        // method to rotate the sprite (appearance of animation; bit rubbish but easy to implement)
     {
         transform.Rotate(Vector3.back * -90);
     } 
