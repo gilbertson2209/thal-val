@@ -2,34 +2,43 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 
 // the Bandit Enum 
-enum Bandits { Red, Green, Blue, Yellow };
+public enum Bandits { Red, Green, Blue, Yellow };
 
 public class GameManager : MonoBehaviour
 
 
     //TODO delete payoffs object and payoffs script not needed
-    //TODO make as much of below local as possible 
+    //TODO make as much of below local as possible/ remove items / private
+    // ie check GM in inspector looks ok 
+    //TODO put payofffs in a script 
 
      
 {
+    // some of the vars and 
+
+
     // payoff variables 
     public TextAsset payoffsFile; // assigned in inspector
     private int[,] intPayoffs;  // filled by *** (check order; make new fn to deal with this)
 
     // ::: TASK VARS ::: (ideally set in GUI) 
-    private int currentTrial = 0;
-    private int currentSession = 0;
+    private int currentTrial = 0;  //set these on start 
+    private int currentSession = 1;
     public int trialsPerSession = 3;
     public int sessionsPerTask = 2;
 
 
-    // 'interaction' vars (displaying prizes; failed trials & task progress ) 
+    // 'interaction' vars (displaying prizes; failed trials & task progress )
+    // tb all contained in canvas 
     public TextMeshProUGUI progress;
     public TextMeshProUGUI alert;
     public GameObject failedTrial;
+
+    public GameObject startScreen; 
 
     public GameObject placeHolderSquare; // placeholder for the clearscreen 
 
@@ -37,28 +46,70 @@ public class GameManager : MonoBehaviour
 
     // trial flag 
     private bool inTrial = false;
-    private bool fail = false; 
 
     // timers 
     public float taskTimer = 0f;
     private float animateTime = 3.0f;
-    private float prizeDisplayTime = 1.0f;
-    private float timeLimit = 1.5f;
+    private float prizeDisplayTime = 2.5f; //1.0f too fast
+    private float timeLimit = 2.5f; //1.5f too fast 
     private float failDisplayTime = 4.2f;
+
+    public bool spinning = false; 
 
     // choice vars 
     public bool choiceMade = false;
-    Bandits chosenBandit;
+    public Bandits chosenBandit;
 
+
+    // what goes into reset and what goes into start?
+    // Start is ok for next, update profgres, fine
+
+    public void Start()
+    {
+        startScreen.SetActive(true);
+
+
+    }
 
     [ContextMenu("StartTrial")]
     public void StartTrial()
     {
+        Debug.Log("In Start Trial");
+        startScreen.SetActive(false);
         NextTrial();
+        CursorLock(false);
+        placeHolderSquare.SetActive(false);
         UpdateProgress(currentTrial, currentSession);
+        placeHolderSquare.SetActive(false);
         taskTimer = 0f;
         inTrial = true;
     }
+    // need to add an intertrial interval (not jittered to start with
+
+    public void EndTrial()
+    {
+        // set t
+        failedTrial.SetActive(false);
+        alert.text = " ";
+        choiceMade = false;
+        inTrial = false;
+        StartCoroutine(Intertrial());
+
+    }
+    IEnumerator Intertrial()
+    {
+        // display the fail signal
+        placeHolderSquare.SetActive(true);
+
+        // Wait for 4.2 seconds
+        yield return new WaitForSeconds(failDisplayTime);
+
+        // move to a 'reset everything' function 
+        StartTrial();
+    }
+
+
+    // everything under here I'm quite quite happy with; surprisingly
 
     public void Update()
     {
@@ -66,114 +117,121 @@ public class GameManager : MonoBehaviour
         if (inTrial && !choiceMade)
         {
             taskTimer += Time.deltaTime;
-            if (taskTimer>= timeLimit)
+            if (taskTimer >= timeLimit)
             {
-                inTrial = false; 
+                inTrial = false;
                 StartCoroutine(FailTrial());
             }
         }
     }
 
-    IEnumerator FailTrial()
-    {
-        // display the fail signal
-        failedTrial.SetActive(true);
-        // Wait for 4.2 seconds
-        yield return new WaitForSeconds(failDisplayTime);
 
-        // move to a 'reset everything' function 
-        failedTrial.SetActive(false);
-    }
-
-    public void EndTrial()
-    {
-        failedTrial.SetActive(false);
-        alert.text = " "; 
-
-        // clear prize award
-        // clear eerything
-        // black screen 
-    }
-
-    public void ClearChoice()
-    {
-        choiceMade = false;
-    }
-
- 
-
-    private void NextTrial()
-    {
-        if (currentTrial == trialsPerSession) //start new session 
-        {
-            if (currentSession == sessionsPerTask) // end the game 
-            {
-                Debug.Log("End Game: Offer a Reset?");
-            } else
-                // next Session (reset current trial to 0)
-            {
-
-                currentSession++;
-                currentTrial = 1;
-            }
-            
-        } else
-            // next trial within current session 
-        {
-            currentTrial++;
-        }
-
-    }
-
-    private void Start()
-        // On start, the current trial/ session needs to be displayed 
-    {
-
-        UpdateProgress(currentTrial, currentSession);
-
-    }
-
- 
-
-    [ContextMenu("Win")]
-    public void Trial()
-    {
-      
-        // if failedtrial = false (or completed; more logically)
-        // this probs needs to be in update 
-        int prizeVal = Random.Range(1, 600);
-
-        UpdatePrizeAlert(prizeVal);
-
-        //if failed trial = true
-
-    }
-
-    
-
-
-    public void BanditChoice(string banditName)
-    // called from the 'OnChoice' scripts attached to the bandits 
+    public void OnChoice(string banditName)
+    // called from the 'OnChoice' script attached to each bandits
+    // idea here is to parse the ObjectName of the clicked bandit into the corresponding enum value 
 
     {
         choiceMade = true;
 
-        // parsing the chosen bandit into an enum value 
-        Bandits bandit;
+        // parse the chosen bandit (str) to the enum 
 
-        if (Bandits.TryParse<Bandits>(banditName, out bandit))
+        if (Bandits.TryParse<Bandits>(banditName, out chosenBandit))
         {
             // Parse the clicked GameObject name (banditName) into an enum value
 
 
-            Debug.Log("Clicked bandit: " + bandit);
+            Debug.Log("Clicked bandit: " + chosenBandit);
         }
         else
         {
             Debug.LogWarning("Invalid bandit name: " + banditName);
         }
 
-        chosenBandit = bandit;
+        //lock and hide the cursor
+
+        CursorLock(true);
+
+        // start 'spinning' the bandit 
+        StartCoroutine(StartSpin());
+
+    }
+
+    private void CursorLock(bool flag)
+    {
+        if (flag)
+        {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+        if (!flag)
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+        }
+    }
+ 
+    IEnumerator StartSpin()
+
+    
+    {
+        // bandit's OnChoice will catch this flag; and enter Update() 
+        spinning = true; 
+
+        // Wait for 4.2 seconds
+        yield return new WaitForSeconds(animateTime);
+
+        //set spinning to false; the Bandit OnChoice will catch this in Update() & stop the 'animation' 
+        spinning = false;
+
+        //change to DAW GRW 
+        int prizeVal = Random.Range(1, 600);
+
+        UpdatePrizeAlert(prizeVal);
+
+        yield return new WaitForSeconds(prizeDisplayTime);
+        
+        EndTrial();
+    }    
+
+    IEnumerator FailTrial()
+    {
+        // display the fail signal
+
+        failedTrial.SetActive(true);
+        CursorLock(true);
+
+        // Wait for 4.2 seconds
+        yield return new WaitForSeconds(failDisplayTime);
+
+        // move to a 'reset everything' function 
+        EndTrial();
+    }
+
+
+    private void NextTrial()
+        // function to control next flow trial 
+    {
+        if (currentTrial == trialsPerSession) //start new session 
+        {
+            if (currentSession == sessionsPerTask) // end the game 
+            {
+                Debug.Log("End Game: Offer a Reset?");
+
+            }
+            else
+            // next Session (reset current trial to 0)
+            {
+
+                currentSession++;
+                currentTrial = 1;
+            }
+
+        }
+        else
+        // next trial within current session 
+        {
+            currentTrial++;
+        }
 
     }
 
