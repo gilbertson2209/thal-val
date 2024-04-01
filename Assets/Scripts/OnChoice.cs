@@ -1,20 +1,22 @@
-//using System.Collections;
-//using System.Collections.Generic;
 using UnityEngine;
 
 public class OnChoice : MonoBehaviour
 {
-    // controls flow 
+    //assign the following in the inspector::
+    //... Game Manager
     public GameManager GameManager;
-
-    public bool isChosen = false;
-    private bool spinning = false; 
+    //... Sprite for 'chosen' state (same as sprite) 
     public Sprite chosenBanditSprite;
 
-    // set following in inspector 
+
+    private bool isChosen = false;
+    private bool spinning = false;
     private string banditName;
     private SpriteRenderer spriteRenderer;
     private Sprite banditSprite;
+    private Color banditColor; 
+
+
 
     private void Awake()
         //get bandit name & original sprite 
@@ -22,6 +24,7 @@ public class OnChoice : MonoBehaviour
         banditName = gameObject.name;
         spriteRenderer = GetComponent<SpriteRenderer>();
         banditSprite = spriteRenderer.sprite;
+        banditColor = spriteRenderer.color;
     }
 
     void Update()
@@ -50,7 +53,8 @@ public class OnChoice : MonoBehaviour
 
         // ...change the sprite to 'chosen' version & 'animate'
         spriteRenderer.sprite = chosenBanditSprite;
-        InvokeRepeating("RotateSprite", 0.2f, 0.4f);
+        spriteRenderer.color = Color.gray;
+        InvokeRepeating("AnimateSprite", 0.2f, 0.4f);
   
      
     }
@@ -63,19 +67,20 @@ public class OnChoice : MonoBehaviour
         
     }
 
-    private void RotateSprite()
+    private void AnimateSprite()
         // method to rotate the sprite (appearance of animation; bit rubbish but easy to implement)
     {
-        transform.Rotate(Vector3.back * -90);
+        transform.Rotate(Vector3.back * -45);
     } 
 
     private void ResetSprite()
         // method to reset the sprite to unchosen state 
     {
 
-        CancelInvoke("RotateSprite");
+        CancelInvoke("AnimateSprite");
         transform.up = Vector3.up;
         spriteRenderer.sprite = banditSprite;
+        spriteRenderer.color = banditColor;
   
     }
   

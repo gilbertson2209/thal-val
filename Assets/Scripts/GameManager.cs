@@ -5,31 +5,23 @@ using TMPro;
 using UnityEngine.UI;
 
 
-// the Bandit Enum 
+// the Bandit Enum // TODO do I even use it? 
 public enum Bandits { Red, Green, Blue, Yellow };
 
 public class GameManager : MonoBehaviour
-
-
-    //TODO delete payoffs object and payoffs script not needed
-    //TODO make as much of below local as possible/ remove items / private
-    // ie check GM in inspector looks ok 
-    //TODO put payofffs in a script 
-
-     
-{
-    // some of the vars and 
-
-
-    // payoff variables 
+{ 
+    // PAYOFF VARS // TODO move into separate object 
     public TextAsset payoffsFile; // assigned in inspector
-    private int[,] intPayoffs;  // filled by *** (check order; make new fn to deal with this)
+    private int[,] intPayoffs;  // filled by *** 
+    public GameObject payoffsScript; 
 
     // ::: TASK VARS ::: (ideally set in GUI) 
     private int currentTrial = 0;  //set these on start 
     private int currentSession = 1;
     public int trialsPerSession = 3;
     public int sessionsPerTask = 2;
+
+    private int trialCount = 0;
 
 
     // 'interaction' vars (displaying prizes; failed trials & task progress )
@@ -38,9 +30,9 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI alert;
     public GameObject failedTrial;
 
-    public GameObject startScreen; 
+    public GameObject startScreen; // has a button to start task
 
-    public GameObject placeHolderSquare; // placeholder for the clearscreen 
+    public GameObject placeHolderSquare; // placeholder for the clearscreen
 
     // ::: TRIAL VARS :::
 
@@ -60,6 +52,8 @@ public class GameManager : MonoBehaviour
     public bool choiceMade = false;
     public Bandits chosenBandit;
 
+   
+
 
     // what goes into reset and what goes into start?
     // Start is ok for next, update profgres, fine
@@ -68,14 +62,21 @@ public class GameManager : MonoBehaviour
     {
         startScreen.SetActive(true);
 
+        //Image startBackground = startScreen.GetComponent<Image>;
+    }
 
+    public void StartTask()
+    {
+        startScreen.SetActive(false);
+        StartTrial(); 
+        // on start task I want to lerp out background v fast
+        // this is te On Click of te Press Start the n
     }
 
     [ContextMenu("StartTrial")]
     public void StartTrial()
     {
-        Debug.Log("In Start Trial");
-        startScreen.SetActive(false);
+        
         NextTrial();
         CursorLock(false);
         placeHolderSquare.SetActive(false);
@@ -96,9 +97,11 @@ public class GameManager : MonoBehaviour
         StartCoroutine(Intertrial());
 
     }
+
     IEnumerator Intertrial()
     {
-        // display the fail signal
+     
+        // lerp make active and lerp 
         placeHolderSquare.SetActive(true);
 
         // Wait for 4.2 seconds
@@ -108,8 +111,6 @@ public class GameManager : MonoBehaviour
         StartTrial();
     }
 
-
-    // everything under here I'm quite quite happy with; surprisingly
 
     public void Update()
     {
@@ -174,6 +175,7 @@ public class GameManager : MonoBehaviour
 
     
     {
+        int prizeVal = Random.Range(1, 600);
         // bandit's OnChoice will catch this flag; and enter Update() 
         spinning = true; 
 
@@ -183,15 +185,22 @@ public class GameManager : MonoBehaviour
         //set spinning to false; the Bandit OnChoice will catch this in Update() & stop the 'animation' 
         spinning = false;
 
-        //change to DAW GRW 
-        int prizeVal = Random.Range(1, 600);
+        Debug.Log(trialCount);
+        Debug.Log(chosenBandit);
 
         UpdatePrizeAlert(prizeVal);
+
+        //change to DAW GRW 
+
+
+
 
         yield return new WaitForSeconds(prizeDisplayTime);
         
         EndTrial();
-    }    
+    }
+
+  
 
     IEnumerator FailTrial()
     {
@@ -211,6 +220,8 @@ public class GameManager : MonoBehaviour
     private void NextTrial()
         // function to control next flow trial 
     {
+        trialCount++;
+
         if (currentTrial == trialsPerSession) //start new session 
         {
             if (currentSession == sessionsPerTask) // end the game 
@@ -236,9 +247,9 @@ public class GameManager : MonoBehaviour
     }
 
 
-    // GUI update functions 
-
+    // GUI update functions
     private void UpdatePrizeAlert(int prizeVal)
+
     {
         alert.text = "You Win " + prizeVal.ToString();
     }
@@ -260,9 +271,9 @@ public class GameManager : MonoBehaviour
 
 
     private void LoadFromCSV()
-        // loading from original Daw CSV from Tom
-        // data is floats; so loading here casts to int
-        // into a 700 x 4 int array 
+    // loading from original Daw CSV from Tom
+    // data is floats; so loading here casts to int
+    // into a 700 x 4 int array 
     {
         string[] lines = payoffsFile.ToString().Split('\n');
         int rows = lines.Length;
@@ -271,17 +282,17 @@ public class GameManager : MonoBehaviour
         Debug.Log(columns);
 
         intPayoffs = new int[rows, columns];
-        
-        for (int i = 0; i < rows-1; i++)
+
+        for (int i = 0; i < rows - 1; i++)
         {
             string[] values = lines[i].Trim().Split(',');
             for (int j = 0; j < columns; j++)
             {
-               
+
                 if (float.TryParse(values[j], out float floatValue))
                 {
                     intPayoffs[i, j] = Mathf.RoundToInt(floatValue);
-                   
+
                 }
                 else
                 {
