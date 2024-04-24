@@ -24,8 +24,6 @@ public class Payoffs : MonoBehaviour
         string[] lines = payoffsFile.ToString().Split('\n');
         int rows = lines.Length;
         int columns = Bandits.GetNames(typeof(Bandits)).Length;
-        Debug.Log(rows);
-        Debug.Log(columns);
 
         intPayoffs = new int[rows, columns];
 
@@ -49,7 +47,4 @@ public class Payoffs : MonoBehaviour
 
 
     }
-
-
-
 }

@@ -1,20 +1,25 @@
 using UnityEngine;
 
-public class OnChoice : MonoBehaviour
+public class OnChoiceA : MonoBehaviour
 {
     //assign the following in the inspector::
     //... Game Manager
     public GameManager GameManager;
-    //... Sprite for 'chosen' state (same as sprite) 
-    public Sprite chosenBanditSprite;
 
+    // Children of The Bandit 
+    private GameObject chosenScreen;
+    private GameObject banditScreen;
+    private GameObject handle; 
 
     private bool isChosen = false;
     private bool spinning = false;
+
+
+
     private string banditName;
-    private SpriteRenderer spriteRenderer;
-    private Sprite banditSprite;
-    private Color banditColor; 
+
+
+    
 
 
 
@@ -22,20 +27,37 @@ public class OnChoice : MonoBehaviour
         //get bandit name & original sprite 
     {
         banditName = gameObject.name;
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        banditSprite = spriteRenderer.sprite;
-        banditColor = spriteRenderer.color;
+    
+        chosenScreen = gameObject.transform.Find("Chosen").gameObject;
+        banditScreen = gameObject.transform.Find("BanditScreen").gameObject;
+        handle = gameObject.transform.Find("Handle").gameObject;
+
     }
 
     void Update()
-    {     
+    {
         // Only run following if bandit has been clicked
-        // 'Spinning' means 'Animated' in the Daw paper 
+        // 'Spinning' means 'Animated' in the Daw paper
+        float rotationSpeed = 10f;
+        float endAngle = 30f;
+
         if (isChosen)
         {
-            spinning = GameManager.spinning; 
-           
-           
+            spinning = GameManager.spinning;
+
+            float step = rotationSpeed * Time.deltaTime;
+
+            // Rotate the object
+            handle.transform.Rotate(Vector3.forward * step);
+
+            // Check if the rotation has reached the end angle
+            if (handle.transform.rotation.eulerAngles.z >= endAngle)
+            {
+                // Stop rotating
+                handle.transform.rotation = Quaternion.Euler(0f, 0f, endAngle);
+            }
+
+
             if (!spinning) {
 
                 ResetChoice();
@@ -47,16 +69,15 @@ public class OnChoice : MonoBehaviour
     void OnMouseDown()
         // when bandit is selected... 
     {
-        // alert GameManager that this Bandit is clicked 
+        // alert GameManager that this Bandit is clicked
+        Debug.Log(banditName);
         GameManager.OnChoice(banditName);
         isChosen = true;
 
-        // ...change the sprite to 'chosen' version & 'animate'
-        spriteRenderer.sprite = chosenBanditSprite;
-        spriteRenderer.color = Color.gray;
-        InvokeRepeating("AnimateSprite", 0.2f, 0.4f);
-  
-     
+        banditScreen.SetActive(false);
+        chosenScreen.SetActive(true);
+
+
     }
 
     public void ResetChoice()
@@ -67,20 +88,15 @@ public class OnChoice : MonoBehaviour
         
     }
 
-    private void AnimateSprite()
-        // method to rotate the sprite (appearance of animation; bit rubbish but easy to implement)
-    {
-        transform.Rotate(Vector3.back * -45);
-    } 
 
     private void ResetSprite()
         // method to reset the sprite to unchosen state 
     {
+        banditScreen.SetActive(true);
+        chosenScreen.SetActive(false);
 
-        CancelInvoke("AnimateSprite");
-        transform.up = Vector3.up;
-        spriteRenderer.sprite = banditSprite;
-        spriteRenderer.color = banditColor;
+        handle.transform.rotation = Quaternion.Euler(0f, 0f, -30f);
+  
   
     }
   

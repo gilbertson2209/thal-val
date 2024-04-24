@@ -5,107 +5,124 @@ using TMPro;
 using UnityEngine.UI;
 
 
-// the Bandit Enum // TODO do I even use it? 
+
+// TODO lerp screens 
+// the Bandit Enum; do I even use it?
+
 public enum Bandits { Red, Green, Blue, Yellow };
 
 public class GameManager : MonoBehaviour
 { 
-    // PAYOFF VARS // TODO move into separate object 
-    public TextAsset payoffsFile; // assigned in inspector
-    private int[,] intPayoffs;  // filled by *** 
-    public GameObject payoffsScript; 
+    // PAYOFFS & INTERTRIALS 
+    public GameObject GameData;
+    private Payoffs Payoffs;
+    private Intertrial Intertrial; 
+    // for intertrial: private yetAnotherScript yetAnotherScript;
 
-    // ::: TASK VARS ::: (ideally set in GUI) 
-    private int currentTrial = 0;  //set these on start 
-    private int currentSession = 1;
-    public int trialsPerSession = 3;
-    public int sessionsPerTask = 2;
+    private int[,] intPayoffs;
+    private int [] intervals;
 
+    // TASK VARS 
+    private int trial = 0;  
+    private int block= 1;
     private int trialCount = 0;
+    // can change in inspector during tests 
+    public int trialsPerBlock = 3;
+    public int blocksPerTask = 2;
 
 
-    // 'interaction' vars (displaying prizes; failed trials & task progress )
-    // tb all contained in canvas 
-    public TextMeshProUGUI progress;
-    public TextMeshProUGUI alert;
-    public GameObject failedTrial;
+    // CANVAS OBJECTS (set in inspector) 
 
     public GameObject startScreen; // has a button to start task
+    public GameObject failedTrial;
+    public GameObject intertrialScreen; // placeholder for the clearscreen
 
-    public GameObject placeHolderSquare; // placeholder for the clearscreen
 
-    // ::: TRIAL VARS :::
+    // TRIAL VARS
 
-    // trial flag 
     private bool inTrial = false;
-
-    // timers 
-    public float taskTimer = 0f;
     private float animateTime = 3.0f;
     private float prizeDisplayTime = 2.5f; //1.0f too fast
     private float timeLimit = 2.5f; //1.5f too fast 
     private float failDisplayTime = 4.2f;
+  
 
+    // trial timers & flags 
+    public float taskTimer = 0f;
     public bool spinning = false; 
 
     // choice vars 
     public bool choiceMade = false;
     public Bandits chosenBandit;
 
-   
+
+    // Get the refs to GameData scripts 
+    public void Awake()
+    { 
+        Payoffs = GameData.GetComponent<Payoffs>();
+        Intertrial = GameData.GetComponent<Intertrial>();
+        Debug.Log("GM:In Awake");
+
+    }
 
 
-    // what goes into reset and what goes into start?
-    // Start is ok for next, update profgres, fine
 
     public void Start()
-    {
-        startScreen.SetActive(true);
 
-        //Image startBackground = startScreen.GetComponent<Image>;
+    {
+        intPayoffs = Payoffs.intPayoffs;
+        intervals = Intertrial.intervals;
+
+        // make sure that the start screen is active
+        // and other canvas objects not active 
+        startScreen.SetActive(true);
+        intertrialScreen.SetActive(false);
+        failedTrial.SetActive(false);
+        Debug.Log("GM:In Start");
     }
 
     public void StartTask()
     {
+        failedTrial.SetActive(false);
         startScreen.SetActive(false);
+        intertrialScreen.SetActive(false);
+        
         StartTrial(); 
-        // on start task I want to lerp out background v fast
-        // this is te On Click of te Press Start the n
     }
 
-    [ContextMenu("StartTrial")]
     public void StartTrial()
     {
-        
+        Debug.Log("GM:In StartTrial");
         NextTrial();
         CursorLock(false);
-        placeHolderSquare.SetActive(false);
-        UpdateProgress(currentTrial, currentSession);
-        placeHolderSquare.SetActive(false);
+      
+        UpdateProgress(trial, block);
+        intertrialScreen.SetActive(false);
         taskTimer = 0f;
         inTrial = true;
     }
-    // need to add an intertrial interval (not jittered to start with
+
+
 
     public void EndTrial()
     {
-        // set t
+        // 
         failedTrial.SetActive(false);
-        alert.text = " ";
         choiceMade = false;
         inTrial = false;
-        StartCoroutine(Intertrial());
+        StartCoroutine(ShowIntertrial());
 
     }
 
-    IEnumerator Intertrial()
+    IEnumerator ShowIntertrial()
     {
-     
-        // lerp make active and lerp 
-        placeHolderSquare.SetActive(true);
+
+        
+        // lerp make ative and lerp 
+        intertrialScreen.SetActive(true);
 
         // Wait for 4.2 seconds
-        yield return new WaitForSeconds(failDisplayTime);
+        yield return new WaitForSeconds(intervals[trialCount]);
 
         // move to a 'reset everything' function 
         StartTrial();
@@ -114,7 +131,7 @@ public class GameManager : MonoBehaviour
 
     public void Update()
     {
-        // only execute following if we are in a trial and choice is not made
+        // only execute following if we are inTrial AND no choicemade
         if (inTrial && !choiceMade)
         {
             taskTimer += Time.deltaTime;
@@ -175,8 +192,8 @@ public class GameManager : MonoBehaviour
 
     
     {
-        int prizeVal = Random.Range(1, 600);
-        // bandit's OnChoice will catch this flag; and enter Update() 
+   
+        // bandit's OnChoice will catch this flag & change appearancw 
         spinning = true; 
 
         // Wait for 4.2 seconds
@@ -185,15 +202,9 @@ public class GameManager : MonoBehaviour
         //set spinning to false; the Bandit OnChoice will catch this in Update() & stop the 'animation' 
         spinning = false;
 
-        Debug.Log(trialCount);
-        Debug.Log(chosenBandit);
-
-        UpdatePrizeAlert(prizeVal);
-
-        //change to DAW GRW 
-
-
-
+        int bandit = (int) chosenBandit;
+       
+        Debug.Log(intPayoffs[bandit,trialCount]);
 
         yield return new WaitForSeconds(prizeDisplayTime);
         
@@ -222,88 +233,40 @@ public class GameManager : MonoBehaviour
     {
         trialCount++;
 
-        if (currentTrial == trialsPerSession) //start new session 
+        if (trial == trialsPerBlock) //start new session 
         {
-            if (currentSession == sessionsPerTask) // end the game 
+            if (block == blocksPerTask) // end the game 
             {
-                Debug.Log("End Game: Offer a Reset?");
+                Debug.Log("End Game:: DO SOMETHING");
 
             }
             else
             // next Session (reset current trial to 0)
             {
 
-                currentSession++;
-                currentTrial = 1;
+                block++;
+                trial = 1;
             }
 
         }
         else
         // next trial within current session 
         {
-            currentTrial++;
+            trial++;
         }
 
     }
 
 
-    // GUI update functions
-    private void UpdatePrizeAlert(int prizeVal)
-
+    private void UpdateProgress(int trial, int block)
     {
-        alert.text = "You Win " + prizeVal.ToString();
-    }
+        string trialString = "Trial " + trial.ToString() + " of " + trialsPerBlock.ToString();
+        string sessionString = " in Session " + block.ToString() + " of " + blocksPerTask.ToString();
 
-    private void UpdateProgress(int currentTrial, int currentSession)
-    {
-        string trialString = "Trial " + currentTrial.ToString() + " of " + trialsPerSession.ToString();
-        string sessionString = " in Session " + currentSession.ToString() + " of " + sessionsPerTask.ToString();
-
-        progress.text = trialString + sessionString;
+        Debug.Log(trialString + sessionString);
+    
 
     }
-
-    private void Awake()
-    // on awake; Payoffs need to be loaded from CSV
-    {
-        LoadFromCSV();
-    }
-
-
-    private void LoadFromCSV()
-    // loading from original Daw CSV from Tom
-    // data is floats; so loading here casts to int
-    // into a 700 x 4 int array 
-    {
-        string[] lines = payoffsFile.ToString().Split('\n');
-        int rows = lines.Length;
-        int columns = Bandits.GetNames(typeof(Bandits)).Length;
-        Debug.Log(rows);
-        Debug.Log(columns);
-
-        intPayoffs = new int[rows, columns];
-
-        for (int i = 0; i < rows - 1; i++)
-        {
-            string[] values = lines[i].Trim().Split(',');
-            for (int j = 0; j < columns; j++)
-            {
-
-                if (float.TryParse(values[j], out float floatValue))
-                {
-                    intPayoffs[i, j] = Mathf.RoundToInt(floatValue);
-
-                }
-                else
-                {
-                    Debug.LogError("Failed to parse value at row " + (i + 1) + ", column " + (j + 1));
-                }
-            }
-        }
-
-
-    }
-
 
 
 }
