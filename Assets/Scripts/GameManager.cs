@@ -5,10 +5,6 @@ using TMPro;
 using UnityEngine.UI;
 
 
-
-// TODO lerp screens 
-// the Bandit Enum; do I even use it?
-
 public enum Bandits { Red, Green, Blue, Yellow };
 
 public class GameManager : MonoBehaviour
@@ -17,10 +13,19 @@ public class GameManager : MonoBehaviour
     public GameObject GameData;
     private Payoffs Payoffs;
     private Intertrial Intertrial; 
-    // for intertrial: private yetAnotherScript yetAnotherScript;
-
     private int[,] intPayoffs;
     private int [] intervals;
+
+    // CANVAS OBJECTS (set in inspector) 
+    public GameObject startScreen; // has a button to start task
+    public GameObject failedTrial;
+    public GameObject intertrialScreen;
+    public Toggle blockBreaks;
+    public TMP_InputField startPosition; 
+
+
+    // Bandits 
+    public GameObject banditsGroup;
 
     // TASK VARS 
     private int trial = 0;  
@@ -30,79 +35,70 @@ public class GameManager : MonoBehaviour
     public int trialsPerBlock = 3;
     public int blocksPerTask = 2;
 
+    // TRIAL TIMES 
+    public float animateTime = 3.0f;
+    public float rewardDisplayTime = 2.5f; //1.0f too fast
+    public float timeLimit = 2.5f; //1.5f too fast 
+    public float failDisplayTime = 4.2f;
 
-    // CANVAS OBJECTS (set in inspector) 
 
-    public GameObject startScreen; // has a button to start task
-    public GameObject failedTrial;
-    public GameObject intertrialScreen; // placeholder for the clearscreen
-
-
-    // TRIAL VARS
-
+    // TRIAL FLAGS & TIMERS 
     private bool inTrial = false;
-    private float animateTime = 3.0f;
-    private float prizeDisplayTime = 2.5f; //1.0f too fast
-    private float timeLimit = 2.5f; //1.5f too fast 
-    private float failDisplayTime = 4.2f;
-  
-
-    // trial timers & flags 
+    public bool spinning = false;
     public float taskTimer = 0f;
-    public bool spinning = false; 
-
-    // choice vars 
+    
+    // idk what to call you vars 
     public bool choiceMade = false;
     public Bandits chosenBandit;
+    public bool showReward = false; 
+    public int reward = 0; //to pass to 
 
 
-    // Get the refs to GameData scripts 
+    
     public void Awake()
-    { 
+    // references to scripts containing the game data 
+    {
         Payoffs = GameData.GetComponent<Payoffs>();
         Intertrial = GameData.GetComponent<Intertrial>();
-        Debug.Log("GM:In Awake");
-
+        
     }
 
-
-
     public void Start()
-
+    // called on start TODO ran sort intervals   
     {
         intPayoffs = Payoffs.intPayoffs;
         intervals = Intertrial.intervals;
 
-        // make sure that the start screen is active
-        // and other canvas objects not active 
+        banditsGroup.SetActive(false);
+
+        // start screen is active
         startScreen.SetActive(true);
+        // other canvas objects not 
         intertrialScreen.SetActive(false);
         failedTrial.SetActive(false);
-        Debug.Log("GM:In Start");
+
     }
 
     public void StartTask()
+
     {
+        banditsGroup.SetActive(true);
         failedTrial.SetActive(false);
         startScreen.SetActive(false);
         intertrialScreen.SetActive(false);
-        
         StartTrial(); 
     }
 
     public void StartTrial()
     {
-        Debug.Log("GM:In StartTrial");
+        intertrialScreen.SetActive(false);
         NextTrial();
         CursorLock(false);
       
-        UpdateProgress(trial, block);
-        intertrialScreen.SetActive(false);
+        UpdateProgress(trial, block);   
         taskTimer = 0f;
         inTrial = true;
     }
-
-
 
     public void EndTrial()
     {
@@ -115,16 +111,10 @@ public class GameManager : MonoBehaviour
     }
 
     IEnumerator ShowIntertrial()
-    {
-
-        
-        // lerp make ative and lerp 
+    { 
+        //TODO lerp 
         intertrialScreen.SetActive(true);
-
-        // Wait for 4.2 seconds
         yield return new WaitForSeconds(intervals[trialCount]);
-
-        // move to a 'reset everything' function 
         StartTrial();
     }
 
@@ -192,9 +182,9 @@ public class GameManager : MonoBehaviour
 
     
     {
-   
-        // bandit's OnChoice will catch this flag & change appearancw 
-        spinning = true; 
+
+        // bandit's OnChoice will catch this flag & change appearance
+        spinning = true;
 
         // Wait for 4.2 seconds
         yield return new WaitForSeconds(animateTime);
@@ -202,16 +192,27 @@ public class GameManager : MonoBehaviour
         //set spinning to false; the Bandit OnChoice will catch this in Update() & stop the 'animation' 
         spinning = false;
 
-        int bandit = (int) chosenBandit;
-       
-        Debug.Log(intPayoffs[bandit,trialCount]);
+        StartCoroutine(DisplayReward());
+    }
 
-        yield return new WaitForSeconds(prizeDisplayTime);
-        
+
+    IEnumerator DisplayReward()
+
+    {
+     
+        int bandit = (int)chosenBandit;
+        reward = intPayoffs[trialCount, bandit];
+        // bandit's OnChoice will catch this flag & display the reward 
+        showReward = true;
+
+        yield return new WaitForSeconds(rewardDisplayTime);
+        showReward = false; 
+
         EndTrial();
     }
 
-  
+
+
 
     IEnumerator FailTrial()
     {
@@ -262,11 +263,8 @@ public class GameManager : MonoBehaviour
     {
         string trialString = "Trial " + trial.ToString() + " of " + trialsPerBlock.ToString();
         string sessionString = " in Session " + block.ToString() + " of " + blocksPerTask.ToString();
-
         Debug.Log(trialString + sessionString);
-    
-
+   
     }
-
 
 }
