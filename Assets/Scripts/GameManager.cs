@@ -8,98 +8,99 @@ using UnityEngine.UI;
 public enum Bandits { Red, Green, Blue, Yellow };
 
 public class GameManager : MonoBehaviour
-{ 
-    // PAYOFFS & INTERTRIALS 
-    public GameObject GameData;
-    private Payoffs Payoffs;
-    private Intertrial Intertrial;
+{
+    // References to ...
+    // ... Canvas objects (set these in inspector) 
+    public GameObject startScreen;
+    public GameObject failedTrial;
+    // placehold for interBlockBreakScreen and endTaskScreen
+    public Toggle blockBreaks;
+    public TMP_InputField startPosition;
 
+    // ... GameObjects & Scripts
+    public GameObject banditsGroup;
+    private Transform banditsTransform;
+    public GameObject fixationCross;
 
-
+    // ...Scripts & Game Data
+    public GameObject gameData;
+    private Payoffs payoffs;
+    private Intervals poissIntervals;
     private int[,] intPayoffs;
     private int [] intervals;
 
-    // CANVAS OBJECTS (set in inspector) 
-    public GameObject startScreen; // has a button to start task
-    public GameObject failedTrial;
-    public GameObject intertrialScreen;
-    public Toggle blockBreaks;
-    public TMP_InputField startPosition; 
-
-
-    // Bandits 
-    public GameObject banditsGroup;
-    //Fixation Cross
-    public GameObject fixationCross;
-
-    // TASK VARS 
-    private int trial = 0;  
-    private int block= 1;
-    private int trialCount = 0;
-    // can change in inspector during tests 
-    public int trialsPerBlock = 3;
-    public int blocksPerTask = 2;
-
-    // TRIAL TIMES 
-    public float animateTime = 3.0f;
-    public float rewardDisplayTime = 1.0f; //too fast
-    public float timeLimit = 1.5f; //too fast 
-    public float failDisplayTime = 4.2f;
-  
-
-    // TRIAL FLAGS & TIMERS 
-    private bool inTrial = false;
-    public bool spinning = false;
+    //...Task vars (set public to alter in inspector)
+    public int trialsPerBlock = 150;
+    public int blocksPerTask = 2; // as above 
+    private int trial = 0;  // these are trackers   
+    private int block= 0;
+    private int trialCount = 0; // tom can change via startScreen 
+    //......& task times // can alter all in inspector 
+    public float ANIMATE_TIME = 3.0f; //from Daw 
+    public float REWARD_DISP_TIME = 1.0f; //from Daw
+    public float TIME_LIMIT = 1.5f; //from Daw
+    public float FAIL_DISP_TIME = 4.2f; //from Daw
     public float taskTimer = 0f;
-    
-    // idk what to call you vars 
+    // .....& flags 
+    private bool inTrial = false;
     public bool choiceMade = false;
-    public Bandits chosenBandit;
-    public bool showReward = false; 
-    public int reward = 0; //to pass to 
-
+    public bool animate = false;
+    public bool showReward = false;
+    //... & data write vars 
+    public Bandits chosenBandit; // use int(chosenBandit)
+    public int reward = 0; //to pass to
 
     
     public void Awake()
     // references to scripts containing the game data 
     {
-        Payoffs = GameData.GetComponent<Payoffs>();
-        Intertrial = GameData.GetComponent<Intertrial>();
-        
+        payoffs = gameData.GetComponent<Payoffs>();
+        poissIntervals = gameData.GetComponent<Intervals>();
     }
 
     public void Start()
-    // called on start TODO ran sort intervals   
+    // called on start TODO ran sort the intervals   
     {
-        intPayoffs = Payoffs.intPayoffs;
-        intervals = Intertrial.intervals;
+        intPayoffs = payoffs.intPayoffs;
+        intervals = poissIntervals.intervals;
+        banditsTransform = banditsGroup.transform;
+
+        startScreen.SetActive(true);
 
         banditsGroup.SetActive(false);
-
-        // start screen is active
-        startScreen.SetActive(true);
-        // other canvas objects not 
-        intertrialScreen.SetActive(false);
+        fixationCross.SetActive(false);  
         failedTrial.SetActive(false);
-
     }
 
     public void StartTask()
-
     {
+        // Check if startPosition has a valid integer value
+        if (!string.IsNullOrEmpty(startPosition.text) && int.TryParse(startPosition.text, out int startNumber))
+        {
+            Debug.Log("Start At");
+            Debug.Log(startNumber);
+            // Use the user-provided start number
+            trialCount = startNumber;
+        }
+        else
+        {
+            Debug.Log("Start at 0");
+            // Default to starting from 0
+            trialCount = 0;
+        }
+
         banditsGroup.SetActive(true);
         failedTrial.SetActive(false);
         startScreen.SetActive(false);
-        intertrialScreen.SetActive(false);
         StartCoroutine(ShowIntertrial());
+        block = 1;
     }
 
     public void StartTrial()
     {
         banditsGroup.SetActive(true);
-        intertrialScreen.SetActive(false);
         NextTrial();
-        CursorLock(false);
+        BlockInput(false);
       
         UpdateProgress(trial, block);   
         taskTimer = 0f;
@@ -108,28 +109,23 @@ public class GameManager : MonoBehaviour
 
     public void EndTrial()
     {
-        // 
         failedTrial.SetActive(false);
         choiceMade = false;
         inTrial = false;
+        //data write out here
         StartCoroutine(ShowIntertrial());
-
     }
 
     IEnumerator ShowIntertrial()
     {
-        CursorLock(true);
+        BlockInput(true);
         banditsGroup.SetActive(false);
-
         fixationCross.SetActive(true);
-
         float interval;
         interval = (float)intervals[trialCount];
-
         yield return new WaitForSeconds(interval);
         StartTrial();
     }
-
 
     public void Update()
     {
@@ -137,7 +133,7 @@ public class GameManager : MonoBehaviour
         if (inTrial && !choiceMade)
         {
             taskTimer += Time.deltaTime;
-            if (taskTimer >= timeLimit)
+            if (taskTimer >= TIME_LIMIT)
             {
                 inTrial = false;
                 StartCoroutine(FailTrial());
@@ -145,17 +141,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
     public void OnChoice(string banditName)
     // called from the 'OnChoice' script attached to each bandits
-    // idea here is to parse the ObjectName of the clicked bandit into the corresponding enum value 
-
     {
         choiceMade = true;
         fixationCross.SetActive(false);
 
         // parse the chosen bandit (str) to the enum 
-
         if (Bandits.TryParse<Bandits>(banditName, out chosenBandit))
         {
             // Parse the clicked GameObject name (banditName) into an enum value
@@ -166,157 +158,81 @@ public class GameManager : MonoBehaviour
             Debug.LogWarning("Invalid bandit name: " + banditName);
         }
 
-        //lock and hide the cursor
-
-        CursorLock(true);
+        BlockInput(true);
 
         // start 'spinning' the bandit 
-        StartCoroutine(StartSpin());
+        StartCoroutine(AnimateAndDisplay());
 
     }
 
-
-    
-
-    private void CursorLock(bool flag)
-        // had to update CursorLock to prevent touchscreens too
-        // so includes DisableAllColliders;
+    private void BlockInput(bool flag)
+        // this should work for laptop, browsers and touchscreens 
     {
-
-
-        if (flag)
-        {
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
-            DisableAllColliders();
-        }
-        if (!flag)
-        {
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
-            EnableAllColliders();
-        }
+        Cursor.visible = !flag;
+        Cursor.lockState = flag ? CursorLockMode.Locked : CursorLockMode.None;
+        AllCollidersEnabled(!flag);
     }
 
 
-    public void DisableAllColliders()
+    private void AllCollidersEnabled(bool enabled)
     {
-        // Loop through each child of the Bandits GameObject
-        for (int i = 0; i < banditsGroup.transform.childCount; i++)
+        for (int i = 0; i < banditsTransform.childCount; i++)
         {
-            // Get the child GameObject at index i
-            GameObject child = banditsGroup.transform.GetChild(i).gameObject;
-
-            // Get the Box Collider component on the child (if exists) and disable it
+            GameObject child = banditsTransform.GetChild(i).gameObject;
             BoxCollider boxCollider = child.GetComponent<BoxCollider>();
             if (boxCollider != null)
             {
-                boxCollider.enabled = false;
+                boxCollider.enabled = enabled;
             }
         }
     }
 
-    // Method to re-enable all Box Collider components on child objects of Bandits
-    public void EnableAllColliders()
+    IEnumerator AnimateAndDisplay()
     {
-        // Loop through each child of the Bandits GameObject
-        for (int i = 0; i < banditsGroup.transform.childCount; i++)
-        {
-            // Get the child GameObject at index i
-            GameObject child = banditsGroup.transform.GetChild(i).gameObject;
-
-            // Get the Box Collider component on the child (if exists) and enable it
-            BoxCollider boxCollider = child.GetComponent<BoxCollider>();
-            if (boxCollider != null)
-            {
-                boxCollider.enabled = true;
-            }
-        }
-    }
-
-
-
-
-    IEnumerator StartSpin()
-
-    
-    {
-
-        // bandit's OnChoice will catch this flag & change appearance
-        spinning = true;
-
-        // Wait for 4.2 seconds
-        yield return new WaitForSeconds(animateTime);
-
-        //set spinning to false; the Bandit OnChoice will catch this in Update() & stop the 'animation' 
-        spinning = false;
-
-        StartCoroutine(DisplayReward());
-    }
-
-
-    IEnumerator DisplayReward()
-
-    {
-     
         int bandit = (int)chosenBandit;
         reward = intPayoffs[trialCount, bandit];
-        // bandit's OnChoice will catch this flag & display the reward 
-        showReward = true;
+       
+        animate = true;  // bandit's OnChoice will catch this flag & change appearance
+        yield return new WaitForSeconds(ANIMATE_TIME);
+        animate = false; //set spinning to false; the Bandit OnChoice will catch this in Update() & stop the 'animation' 
 
-        yield return new WaitForSeconds(rewardDisplayTime);
-        showReward = false; 
-
+        showReward = true; // bandit's OnChoice will catch this flag & display the reward 
+        yield return new WaitForSeconds(REWARD_DISP_TIME);
+        showReward = false;
         EndTrial();
+
     }
-
-
-
 
     IEnumerator FailTrial()
     {
-        // display the fail signal
         fixationCross.SetActive(false);
         failedTrial.SetActive(true);
-        CursorLock(true);
-
-        // Wait for 4.2 seconds
-        yield return new WaitForSeconds(failDisplayTime);
-
-        // move to a 'reset everything' function 
+        BlockInput(true);
+        yield return new WaitForSeconds(FAIL_DISP_TIME);
         EndTrial();
     }
 
-
     private void NextTrial()
-        // function to control next flow trial 
     {
         trialCount++;
 
-        if (trial == trialsPerBlock) //start new session 
+        if (trial == trialsPerBlock)
         {
-            if (block == blocksPerTask) // end the game 
+            if (block == blocksPerTask)
             {
                 Debug.Log("End Game:: DO SOMETHING");
-
             }
             else
-            // next Session (reset current trial to 0)
             {
-
                 block++;
                 trial = 1;
             }
-
         }
         else
-        // next trial within current session 
         {
             trial++;
         }
-
     }
-
 
     private void UpdateProgress(int trial, int block)
     {

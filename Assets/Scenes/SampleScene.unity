@@ -282,25 +282,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fec0f42c2ba65451189b5b077736b073, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GameData: {fileID: 1190191024}
   startScreen: {fileID: 616994211}
   failedTrial: {fileID: 1475086061}
-  intertrialScreen: {fileID: 1306931432}
   blockBreaks: {fileID: 0}
   startPosition: {fileID: 918816174}
   banditsGroup: {fileID: 1829408013}
   fixationCross: {fileID: 1882213107}
+  gameData: {fileID: 1190191024}
   trialsPerBlock: 150
   blocksPerTask: 3
   animateTime: 3
   rewardDisplayTime: 1
   timeLimit: 1.5
   failDisplayTime: 4.2
-  spinning: 0
   taskTimer: 0
   choiceMade: 0
-  chosenBandit: 0
+  spinning: 0
   showReward: 0
+  chosenBandit: 0
   reward: 0
 --- !u!1 &417749879
 GameObject:
@@ -2108,7 +2107,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1190191024}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e78fe5e31b1ca431fa2912c9f3a4d001, type: 3}
+  m_Script: {fileID: 11500000, guid: e91d709696cce4a4f939dca1f37ff404, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   interTrial: {fileID: 4900000, guid: 4b0748d1a09b44e15a22606726d5d1d4, type: 3}

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Intertrial : MonoBehaviour
+public class Intervals : MonoBehaviour
 {
 
     public TextAsset interTrial; // Assign your .txt file to this field in the Inspector

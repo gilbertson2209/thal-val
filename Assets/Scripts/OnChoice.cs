@@ -14,7 +14,7 @@ public class OnChoice : MonoBehaviour
 
     // Other flags & vars 
     private bool isChosen = false;
-    private bool spinning = false;
+    private bool animate = false;
     private bool showReward = false;
 
     private int reward = 0; 
@@ -39,14 +39,13 @@ public class OnChoice : MonoBehaviour
     void Update()
     {
         // Only run following if bandit has been clicked
-        // 'Spinning' means 'Animated' in the Daw paper
 
         float rotationSpeed = 1.0f;
         float endAngle = 150f;
 
         if (isChosen)
         {
-            spinning = GameManager.spinning;
+            animate = GameManager.animate;
             showReward = GameManager.showReward;
 
             float step = rotationSpeed * Time.deltaTime;
@@ -62,7 +61,7 @@ public class OnChoice : MonoBehaviour
             }
 
 
-            if (!spinning)
+            if (!animate)
             {
                 if (showReward)
                 {
