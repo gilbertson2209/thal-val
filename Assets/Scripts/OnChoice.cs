@@ -109,20 +109,11 @@ public class OnChoice : MonoBehaviour
         isChosen = false;
         showReward = false;
         reward = 0;
-        ResetSprite();
-        
-    }
-
-
-    private void ResetSprite()
-        // method to reset the sprite to unchosen state 
-    {
         banditScreen.SetActive(true);
         chosenScreen.SetActive(false);
         rewardNotification.text = "";
         handle.transform.rotation = Quaternion.Euler(0f, 0f, 230f);
-  
-  
+        
     }
   
 
