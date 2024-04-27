@@ -12,7 +12,10 @@ public class GameManager : MonoBehaviour
     // PAYOFFS & INTERTRIALS 
     public GameObject GameData;
     private Payoffs Payoffs;
-    private Intertrial Intertrial; 
+    private Intertrial Intertrial;
+
+
+
     private int[,] intPayoffs;
     private int [] intervals;
 
@@ -26,6 +29,8 @@ public class GameManager : MonoBehaviour
 
     // Bandits 
     public GameObject banditsGroup;
+    //Fixation Cross
+    public GameObject fixationCross;
 
     // TASK VARS 
     private int trial = 0;  
@@ -37,10 +42,10 @@ public class GameManager : MonoBehaviour
 
     // TRIAL TIMES 
     public float animateTime = 3.0f;
-    public float rewardDisplayTime = 2.5f; //1.0f too fast
-    public float timeLimit = 2.5f; //1.5f too fast 
+    public float rewardDisplayTime = 1.0f; //too fast
+    public float timeLimit = 1.5f; //too fast 
     public float failDisplayTime = 4.2f;
-
+  
 
     // TRIAL FLAGS & TIMERS 
     private bool inTrial = false;
@@ -86,11 +91,12 @@ public class GameManager : MonoBehaviour
         failedTrial.SetActive(false);
         startScreen.SetActive(false);
         intertrialScreen.SetActive(false);
-        StartTrial(); 
+        StartCoroutine(ShowIntertrial());
     }
 
     public void StartTrial()
     {
+        banditsGroup.SetActive(true);
         intertrialScreen.SetActive(false);
         NextTrial();
         CursorLock(false);
@@ -111,10 +117,16 @@ public class GameManager : MonoBehaviour
     }
 
     IEnumerator ShowIntertrial()
-    { 
-        //TODO lerp 
-        intertrialScreen.SetActive(true);
-        yield return new WaitForSeconds(intervals[trialCount]);
+    {
+        CursorLock(true);
+        banditsGroup.SetActive(false);
+
+        fixationCross.SetActive(true);
+
+        float interval;
+        interval = (float)intervals[trialCount];
+
+        yield return new WaitForSeconds(interval);
         StartTrial();
     }
 
@@ -140,15 +152,14 @@ public class GameManager : MonoBehaviour
 
     {
         choiceMade = true;
+        fixationCross.SetActive(false);
 
         // parse the chosen bandit (str) to the enum 
 
         if (Bandits.TryParse<Bandits>(banditName, out chosenBandit))
         {
             // Parse the clicked GameObject name (banditName) into an enum value
-
-
-            Debug.Log("Clicked bandit: " + chosenBandit);
+            Debug.Log("Clicked bandit: " + (int)chosenBandit);
         }
         else
         {
@@ -164,20 +175,68 @@ public class GameManager : MonoBehaviour
 
     }
 
+
+    
+
     private void CursorLock(bool flag)
+        // had to update CursorLock to prevent touchscreens too
+        // so includes DisableAllColliders;
     {
+
+
         if (flag)
         {
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
+            DisableAllColliders();
         }
         if (!flag)
         {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
+            EnableAllColliders();
         }
     }
- 
+
+
+    public void DisableAllColliders()
+    {
+        // Loop through each child of the Bandits GameObject
+        for (int i = 0; i < banditsGroup.transform.childCount; i++)
+        {
+            // Get the child GameObject at index i
+            GameObject child = banditsGroup.transform.GetChild(i).gameObject;
+
+            // Get the Box Collider component on the child (if exists) and disable it
+            BoxCollider boxCollider = child.GetComponent<BoxCollider>();
+            if (boxCollider != null)
+            {
+                boxCollider.enabled = false;
+            }
+        }
+    }
+
+    // Method to re-enable all Box Collider components on child objects of Bandits
+    public void EnableAllColliders()
+    {
+        // Loop through each child of the Bandits GameObject
+        for (int i = 0; i < banditsGroup.transform.childCount; i++)
+        {
+            // Get the child GameObject at index i
+            GameObject child = banditsGroup.transform.GetChild(i).gameObject;
+
+            // Get the Box Collider component on the child (if exists) and enable it
+            BoxCollider boxCollider = child.GetComponent<BoxCollider>();
+            if (boxCollider != null)
+            {
+                boxCollider.enabled = true;
+            }
+        }
+    }
+
+
+
+
     IEnumerator StartSpin()
 
     
@@ -217,7 +276,7 @@ public class GameManager : MonoBehaviour
     IEnumerator FailTrial()
     {
         // display the fail signal
-
+        fixationCross.SetActive(false);
         failedTrial.SetActive(true);
         CursorLock(true);
 

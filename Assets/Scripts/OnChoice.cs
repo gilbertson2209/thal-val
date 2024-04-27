@@ -3,8 +3,7 @@ using TMPro;
 
 public class OnChoice : MonoBehaviour
 {
-    //assign the following in the inspector::
-    //... Game Manager
+    //assign the Game Manager in inspector (to each instance)
     public GameManager GameManager;
 
     // Children of The Bandit 
@@ -13,16 +12,18 @@ public class OnChoice : MonoBehaviour
     private GameObject handle; 
     private TMP_Text rewardNotification;
 
+    // Other flags & vars 
     private bool isChosen = false;
     private bool spinning = false;
-
     private bool showReward = false;
-    private int reward = 0; 
 
+    private int reward = 0; 
     private string banditName;
 
+
+
     private void Awake()
-        //get bandit name & original sprite 
+        //get bandit name & objects 
     {
         banditName = gameObject.name;
     
@@ -39,8 +40,9 @@ public class OnChoice : MonoBehaviour
     {
         // Only run following if bandit has been clicked
         // 'Spinning' means 'Animated' in the Daw paper
+
         float rotationSpeed = 1.0f;
-        float endAngle = 30f;
+        float endAngle = 150f;
 
         if (isChosen)
         {
@@ -50,7 +52,7 @@ public class OnChoice : MonoBehaviour
             float step = rotationSpeed * Time.deltaTime;
 
             // Rotate the object
-            handle.transform.Rotate(Vector3.forward * step);
+            handle.transform.Rotate(Vector3.back * step);
 
             // Check if the rotation has reached the end angle
             if (handle.transform.rotation.eulerAngles.z >= endAngle)
@@ -78,7 +80,7 @@ public class OnChoice : MonoBehaviour
     }
 
     void OnMouseDown()
-        // when bandit is selected... 
+        // when this object is selected 
     {
         // alert GameManager that this Bandit is clicked
         Debug.Log(banditName);
@@ -95,18 +97,16 @@ public class OnChoice : MonoBehaviour
     public void DisplayReward()
     // method to reset the bandit to unchosen state
     {
-        Debug.Log("In Display");
         banditScreen.SetActive(true);
         chosenScreen.SetActive(false);
         reward = GameManager.reward;
-        rewardNotification.text = "Obtained <br>" + reward.ToString() + "<br> Points";
+        rewardNotification.text = "+" + reward.ToString() + "<br> Points";
 
     }
 
     public void ResetChoice()
         // method to reset the bandit to unchosen state
     {
-        Debug.Log("reset choice");
         isChosen = false;
         showReward = false;
         reward = 0;
@@ -121,7 +121,7 @@ public class OnChoice : MonoBehaviour
         banditScreen.SetActive(true);
         chosenScreen.SetActive(false);
         rewardNotification.text = "";
-        handle.transform.rotation = Quaternion.Euler(0f, 0f, -30f);
+        handle.transform.rotation = Quaternion.Euler(0f, 0f, 230f);
   
   
     }
