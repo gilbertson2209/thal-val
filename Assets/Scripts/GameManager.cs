@@ -1,5 +1,6 @@
+using System;
+using System.IO;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
@@ -49,11 +50,21 @@ public class GameManager : MonoBehaviour
     //... & data write vars 
     public Bandits chosenBandit; // use int(chosenBandit)
     public int reward = 0; //to pass to
-
     
+    string pathToLogs;
+
     public void Awake()
     // references to scripts containing the game data 
     {
+        DateTime currentTime = DateTime.UtcNow;
+        string fileName = currentTime.ToString("yyyy.MM.dd.HH.mm.ss");
+    
+        pathToLogs = Application.persistentDataPath + "/" + fileName + ".txt";
+
+        using (StreamWriter dataOut = File.CreateText(pathToLogs))
+        {
+            dataOut.WriteLine(DateTime.Now.ToString() + ": " + "Task Initialised");
+        }
         payoffs = gameData.GetComponent<Payoffs>();
         poissIntervals = gameData.GetComponent<Intervals>();
     }
@@ -99,6 +110,7 @@ public class GameManager : MonoBehaviour
     public void StartTrial()
     {
         banditsGroup.SetActive(true);
+        choiceMade = false;
         NextTrial();
         BlockInput(false);
       
@@ -109,8 +121,8 @@ public class GameManager : MonoBehaviour
 
     public void EndTrial()
     {
+        SaveData();
         failedTrial.SetActive(false);
-        choiceMade = false;
         inTrial = false;
         //data write out here
         StartCoroutine(ShowIntertrial());
@@ -199,12 +211,33 @@ public class GameManager : MonoBehaviour
         showReward = true; // bandit's OnChoice will catch this flag & display the reward 
         yield return new WaitForSeconds(REWARD_DISP_TIME);
         showReward = false;
+
         EndTrial();
+
+    }
+
+
+
+    private void SaveData()
+    {
+        int bandit = 0; 
+        if (choiceMade) {
+            bandit = (int)chosenBandit;
+            bandit ++; // c# starts at 0
+        }
+        string[] trialData = {trialCount.ToString(), reward.ToString(), bandit.ToString()};
+        string dataToWrite = string.Join(",", trialData);
+
+        using (StreamWriter dataOut = File.AppendText(pathToLogs))
+        {
+            dataOut.WriteLine(dataToWrite);
+        }
 
     }
 
     IEnumerator FailTrial()
     {
+        reward = 0;
         fixationCross.SetActive(false);
         failedTrial.SetActive(true);
         BlockInput(true);
