@@ -90,7 +90,4 @@ public class OnChoice : MonoBehaviour
         int reward = gameManager.reward;
         rewardNotification.text = "+" + reward.ToString() + "<br> Points";
     }
-
-  
-
 }

@@ -8,7 +8,7 @@ using TMPro;
 
 
 
-public enum Bandits { Red, Green, Blue, Yellow };
+public enum Bandits { Yellow, Blue, Red, Green };
 
 public class GameManager : MonoBehaviour
 {
@@ -51,6 +51,7 @@ public class GameManager : MonoBehaviour
     public bool animate = false;
     public bool showReward = false;
     private bool taskComplete = false;
+    private bool onBlockBreak = false;
     //... & data write vars 
     public Bandits chosenBandit; // use int(chosenBandit)
     public int reward = 0;
@@ -62,7 +63,7 @@ public class GameManager : MonoBehaviour
     public void Awake()
     // references to scripts containing the game data 
     {
-        DateTime currentTime = DateTime.Now;
+        DateTime currentTime = DateTime.UtcNow;
         string fileName = currentTime.ToString("yyyy.MM.dd.HH.mm.ss");
     
         pathToLogs = Application.persistentDataPath + "/" + fileName + ".txt";
@@ -99,33 +100,31 @@ public class GameManager : MonoBehaviour
         startScreen.SetActive(false);
         StartCoroutine(ShowIntertrial());
 
-}
+    }
 
     IEnumerator ShowIntertrial()
-    {  
+    {
         BlockInput(true);
         failedTrial.SetActive(false);
-
         ActivateBandits(false);
         banditsGroup.SetActive(false);
         fixationCross.SetActive(true);
 
-
         if (trial == trialsPerBlock)
         {
-        
             if (block == blocksPerTask)
             {
-                Debug.Log("End Task");
                 taskComplete = true;
                 EndTask();
             }
 
-            if (blockBreaks && !taskComplete)
+            if (blockBreaks.isOn && !taskComplete)
             {
-                InterBlockBreak();
+                onBlockBreak = true;
+                interBlockBreakScreen.SetActive(true);
+                yield return WaitForContinue();
+                interBlockBreakScreen.SetActive(false);
             }
-
         }
 
         if (!taskComplete)
@@ -135,7 +134,20 @@ public class GameManager : MonoBehaviour
             yield return new WaitForSeconds(interval);
             NextTrial();
         }
-     
+    }
+
+    IEnumerator WaitForContinue()
+    {
+        while (onBlockBreak)
+        {
+            yield return null;
+        }
+  
+    }
+    
+    public void ContinueTask() // Call when the UI button on the interblock screen is pressed
+    {
+        onBlockBreak = false;
     }
 
     private void NextTrial()
@@ -150,13 +162,8 @@ public class GameManager : MonoBehaviour
         {
             trial++;
         }
-
        
         trialCount++;
-
-
-        Debug.Log("Starting trial: " + trialCount.ToString());
-        Debug.Log("Trial: " + trial.ToString() + " Block: " + block.ToString());
 
         BlockInput(false);
         banditsGroup.SetActive(true);
@@ -166,13 +173,6 @@ public class GameManager : MonoBehaviour
         inTrial = true;
        
     }
-
-    private void InterBlockBreak()
-    {
-        Debug.Log("Intertrial Break Here " + block.ToString()); 
-    }
-
- 
 
     public void ActivateBandits(bool flag)
     {
