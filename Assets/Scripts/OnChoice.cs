@@ -4,7 +4,7 @@ using TMPro;
 public class OnChoice : MonoBehaviour
 {
     //assign the Game Manager in inspector (to each instance)
-    public GameManager GameManager;
+    public GameManager gameManager;
 
     // Children of The Bandit 
     private GameObject chosenScreen;
@@ -12,18 +12,16 @@ public class OnChoice : MonoBehaviour
     private GameObject handle; 
     private TMP_Text rewardNotification;
 
+    // handle 'animation'
+    private float rotationSpeed = 1.0f;
+    private float endAngle = 150f;
+    private float startAngle = 230f;
     // Other flags & vars 
     private bool isChosen = false;
-    private bool animate = false;
-    private bool showReward = false;
-
-    private int reward = 0; 
     private string banditName;
-
-
+  
 
     private void Awake()
-        //get bandit name & objects 
     {
         banditName = gameObject.name;
     
@@ -31,66 +29,57 @@ public class OnChoice : MonoBehaviour
         banditScreen = gameObject.transform.Find("BanditScreen").gameObject;
         handle = gameObject.transform.Find("Handle").gameObject;
 
-        GameObject rewardDisplay = banditScreen.transform.Find("RewardNotification").gameObject;
-        rewardNotification = rewardDisplay.GetComponent<TextMeshPro>();
-        rewardNotification.text = "";
+        rewardNotification = banditScreen.transform.Find("RewardNotification").GetComponent<TextMeshPro>();
+    }
+
+    private void Start() //couldn't quite get around fudging this! 
+    {
+        ResetBandit();
+    }
+    private void OnEnable()
+    {
+        ResetBandit();
+    }
+
+    public void ResetBandit()
+    // method to reset the bandit to unchosen state
+    {
+        isChosen = false;
+        rewardNotification.text = " ";
+        banditScreen.SetActive(true);
+        chosenScreen.SetActive(false);
+        handle.transform.rotation = Quaternion.Euler(0f, 0f, startAngle);
+
     }
 
     void Update()
     {
-        // Only run following if bandit has been clicked
-
-        float rotationSpeed = 1.0f;
-        float endAngle = 150f;
-
         if (isChosen)
         {
-            animate = GameManager.animate;
-            showReward = GameManager.showReward;
+            bool animate = gameManager.animate;
+            bool showReward = gameManager.showReward;
 
-            float step = rotationSpeed * Time.deltaTime;
-
-            // Rotate the object
+            float step = rotationSpeed * Time.deltaTime;  // Code to move the handle. 
             handle.transform.Rotate(Vector3.back * step);
-
-            // Check if the rotation has reached the end angle
             if (handle.transform.rotation.eulerAngles.z >= endAngle)
-            {
-                // Stop rotating
                 handle.transform.rotation = Quaternion.Euler(0f, 0f, endAngle);
-            }
-
 
             if (!animate)
             {
-                if (showReward)
-                {
-                    DisplayReward();
-                }
+                if (showReward) DisplayReward();
 
-                if (!showReward)
-                {
-                    ResetChoice();
-                }
-              
             }
 
         }
     }
 
     void OnMouseDown()
-        // when this object is selected 
     {
-        // alert GameManager that this Bandit is clicked
-        Debug.Log(banditName);
-        GameManager.OnChoice(banditName);
-
+        
+        gameManager.OnChoice(banditName); // alert gameManager that this Bandit is clicked
         isChosen = true;
-
         banditScreen.SetActive(false);
         chosenScreen.SetActive(true);
-
-
     }
 
     public void DisplayReward()
@@ -98,23 +87,10 @@ public class OnChoice : MonoBehaviour
     {
         banditScreen.SetActive(true);
         chosenScreen.SetActive(false);
-        reward = GameManager.reward;
+        int reward = gameManager.reward;
         rewardNotification.text = "+" + reward.ToString() + "<br> Points";
-
     }
 
-    public void ResetChoice()
-        // method to reset the bandit to unchosen state
-    {
-        isChosen = false;
-        showReward = false;
-        reward = 0;
-        banditScreen.SetActive(true);
-        chosenScreen.SetActive(false);
-        rewardNotification.text = "";
-        handle.transform.rotation = Quaternion.Euler(0f, 0f, 230f);
-        
-    }
   
 
 }

@@ -2,8 +2,10 @@ using System;
 using System.IO;
 using System.Collections;
 using UnityEngine;
-using TMPro;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using TMPro;
+
 
 
 public enum Bandits { Red, Green, Blue, Yellow };
@@ -14,7 +16,8 @@ public class GameManager : MonoBehaviour
     // ... Canvas objects (set these in inspector) 
     public GameObject startScreen;
     public GameObject failedTrial;
-    // placehold for interBlockBreakScreen and endTaskScreen
+    public GameObject endScreen;
+    public GameObject interBlockBreakScreen;
     public Toggle blockBreaks;
     public TMP_InputField startPosition;
 
@@ -31,10 +34,10 @@ public class GameManager : MonoBehaviour
     private int [] intervals;
 
     //...Task vars (set public to alter in inspector)
-    public int trialsPerBlock = 150;
-    public int blocksPerTask = 2; // as above 
+    public int trialsPerBlock = 3;
+    public int blocksPerTask = 4; // as above 
     private int trial = 0;  // these are trackers   
-    private int block= 0;
+    private int block= 1;
     private int trialCount = 0; // tom can change via startScreen 
     //......& task times // can alter all in inspector 
     public float ANIMATE_TIME = 3.0f; //from Daw 
@@ -43,13 +46,15 @@ public class GameManager : MonoBehaviour
     public float FAIL_DISP_TIME = 4.2f; //from Daw
     public float taskTimer = 0f;
     // .....& flags 
-    private bool inTrial = false;
+    public bool inTrial = false;
     public bool choiceMade = false;
     public bool animate = false;
     public bool showReward = false;
+    private bool taskComplete = false;
     //... & data write vars 
     public Bandits chosenBandit; // use int(chosenBandit)
-    public int reward = 0; //to pass to
+    public int reward = 0;
+
     private float tStart;
     private float responseTime;
     private string pathToLogs;
@@ -57,7 +62,7 @@ public class GameManager : MonoBehaviour
     public void Awake()
     // references to scripts containing the game data 
     {
-        DateTime currentTime = DateTime.UtcNow;
+        DateTime currentTime = DateTime.Now;
         string fileName = currentTime.ToString("yyyy.MM.dd.HH.mm.ss");
     
         pathToLogs = Application.persistentDataPath + "/" + fileName + ".txt";
@@ -72,17 +77,16 @@ public class GameManager : MonoBehaviour
     }
 
     public void Start()
-    // called on start TODO ran sort the intervals   
     {
         intPayoffs = payoffs.intPayoffs;
-        intervals = poissIntervals.intervals;
+        intervals = poissIntervals.intervals; //TODO ran sort this 
         banditsTransform = banditsGroup.transform;
 
         startScreen.SetActive(true);
-
         banditsGroup.SetActive(false);
         fixationCross.SetActive(false);  
         failedTrial.SetActive(false);
+        interBlockBreakScreen.SetActive(false);
     }
 
     public void StartTask()
@@ -94,43 +98,103 @@ public class GameManager : MonoBehaviour
         }
         startScreen.SetActive(false);
         StartCoroutine(ShowIntertrial());
-        block = 1;
-    }
+
+}
 
     IEnumerator ShowIntertrial()
-    {
+    {  
         BlockInput(true);
         failedTrial.SetActive(false);
+
+        ActivateBandits(false);
         banditsGroup.SetActive(false);
         fixationCross.SetActive(true);
-        float interval;
-        interval = (float)intervals[trialCount];
-        yield return new WaitForSeconds(interval);
-        StartTrial();
+
+
+        if (trial == trialsPerBlock)
+        {
+        
+            if (block == blocksPerTask)
+            {
+                Debug.Log("End Task");
+                taskComplete = true;
+                EndTask();
+            }
+
+            if (blockBreaks && !taskComplete)
+            {
+                InterBlockBreak();
+            }
+
+        }
+
+        if (!taskComplete)
+        {
+            float interval;
+            interval = (float)intervals[trialCount];
+            yield return new WaitForSeconds(interval);
+            NextTrial();
+        }
+     
     }
 
-    public void StartTrial()
+    private void NextTrial()
     {
-        NextTrial();
+       
+        if (trial == trialsPerBlock)
+        {
+            block++;
+            trial = 1;
+        }
+        else
+        {
+            trial++;
+        }
+
+       
+        trialCount++;
+
+
+        Debug.Log("Starting trial: " + trialCount.ToString());
+        Debug.Log("Trial: " + trial.ToString() + " Block: " + block.ToString());
+
         BlockInput(false);
         banditsGroup.SetActive(true);
-
+        ActivateBandits(true);
         tStart = Time.time;
         taskTimer = 0f;
-        choiceMade = false;
         inTrial = true;
+       
+    }
+
+    private void InterBlockBreak()
+    {
+        Debug.Log("Intertrial Break Here " + block.ToString()); 
+    }
+
+ 
+
+    public void ActivateBandits(bool flag)
+    {
+        for (int i = 0; i < banditsTransform.childCount; i++)
+        {
+            GameObject child = banditsTransform.GetChild(i).gameObject;
+            child.SetActive(flag);
+        }
     }
 
     public void EndTrial()
     {
+        responseTime = Time.time - tStart;
         SaveData();
+        choiceMade = false;
         failedTrial.SetActive(false);
-        inTrial = false;
         StartCoroutine(ShowIntertrial());
     }
 
     IEnumerator FailTrial()
     {
+        inTrial = false;
         reward = 0;
         fixationCross.SetActive(false);
         failedTrial.SetActive(true);
@@ -139,28 +203,10 @@ public class GameManager : MonoBehaviour
         EndTrial();
     }
 
-    private void NextTrial()
+    public void EndTask()
     {
-        trialCount++;
-
-        if (trial == trialsPerBlock)
-        {
-            if (block == blocksPerTask)
-            {
-                Debug.Log("End Game:: DO SOMETHING");
-            }
-            else
-            {
-                block++;
-                trial = 1;
-            }
-        }
-        else
-        {
-            trial++;
-        }
+        endScreen.SetActive(true);
     }
-
 
     public void Update()
     {
@@ -169,8 +215,7 @@ public class GameManager : MonoBehaviour
         {
             taskTimer += Time.deltaTime;
             if (taskTimer >= TIME_LIMIT)
-            {
-                inTrial = false;
+            { 
                 StartCoroutine(FailTrial());
             }
         }
@@ -179,29 +224,19 @@ public class GameManager : MonoBehaviour
     public void OnChoice(string banditName)
     // called from the 'OnChoice' script attached to each bandits
     {
+        inTrial = false;
         choiceMade = true;
         fixationCross.SetActive(false);
-
-        // parse the chosen bandit (str) to the enum 
-        if (Bandits.TryParse<Bandits>(banditName, out chosenBandit))
-        {
-            // Parse the clicked GameObject name (banditName) into an enum value
-            Debug.Log("Clicked bandit: " + (int)chosenBandit);
-        }
-        else
-        {
-            Debug.LogWarning("Invalid bandit name: " + banditName);
-        }
-
+        Enum.TryParse(banditName, out chosenBandit);
         BlockInput(true);
         StartCoroutine(AnimateAndDisplay());
-
+      
     }
 
     IEnumerator AnimateAndDisplay()
     {
         int bandit = (int)chosenBandit;
-        reward = intPayoffs[trialCount, bandit];
+        reward = intPayoffs[trialCount-1, bandit];
 
         animate = true;  // bandit's OnChoice will catch this flag & change appearance
         yield return new WaitForSeconds(ANIMATE_TIME);
@@ -209,8 +244,8 @@ public class GameManager : MonoBehaviour
 
         showReward = true; // bandit's OnChoice will catch this flag & display the reward 
         yield return new WaitForSeconds(REWARD_DISP_TIME);
+     
         showReward = false;
-
         EndTrial();
 
     }
@@ -218,38 +253,41 @@ public class GameManager : MonoBehaviour
     private void BlockInput(bool flag)
         // this should work for laptop, browsers and touchscreens 
     {
-        Cursor.visible = !flag;
-        Cursor.lockState = flag ? CursorLockMode.Locked : CursorLockMode.None;
         AllCollidersEnabled(!flag);
     }
 
 
-    private void AllCollidersEnabled(bool enabled)
+    private void AllCollidersEnabled(bool enabled) 
     {
         for (int i = 0; i < banditsTransform.childCount; i++)
         {
             GameObject child = banditsTransform.GetChild(i).gameObject;
-            BoxCollider boxCollider = child.GetComponent<BoxCollider>();
-            if (boxCollider != null)
+            PolygonCollider2D polyCollider = child.GetComponent<PolygonCollider2D>();
+            if (polyCollider != null)
             {
-                boxCollider.enabled = enabled;
+                polyCollider.enabled = enabled;
             }
         }
     }
 
     private void SaveData()
     {
-        responseTime = Time.time - tStart;
         int bandit = 0; 
         if (choiceMade) {
             bandit = (int)chosenBandit;
             bandit ++; // c# starts at 0
         }
+
         string[] trialData = { trialCount.ToString(), reward.ToString(), responseTime.ToString(), bandit.ToString() };
         string dataToWrite = string.Join(",", trialData);
 
         using StreamWriter dataOut = File.AppendText(pathToLogs);
         dataOut.WriteLine(dataToWrite);
 
+    }
+
+    public void RestartGame()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
