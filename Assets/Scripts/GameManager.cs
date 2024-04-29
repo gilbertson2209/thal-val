@@ -18,8 +18,11 @@ public class GameManager : MonoBehaviour
     public GameObject failedTrial;
     public GameObject endScreen;
     public GameObject interBlockBreakScreen;
+    public GameObject customSettings; //only need this for set show/ unshow reallu can remove 
     public Toggle blockBreaks;
+
     public TMP_InputField startPosition;
+    public TMP_InputField nTrialsToRunAfterStart;
 
     // ... GameObjects & Scripts
     public GameObject banditsGroup;
@@ -38,7 +41,12 @@ public class GameManager : MonoBehaviour
     public int blocksPerTask = 4; // as above 
     private int trial = 0;  // these are trackers   
     private int block= 1;
-    private int trialCount = 0; // tom can change via startScreen 
+  
+    public int trialStart = 0;
+    public int trialCount = 0; // tom can change via startScreen
+    public int currentTrial;
+    public int trialDuration;
+
     //......& task times // can alter all in inspector 
     public float ANIMATE_TIME = 3.0f; //from Daw 
     public float REWARD_DISP_TIME = 1.0f; //from Daw
@@ -63,7 +71,7 @@ public class GameManager : MonoBehaviour
     public void Awake()
     // references to scripts containing the game data 
     {
-        DateTime currentTime = DateTime.UtcNow;
+        DateTime currentTime = DateTime.Now;
         string fileName = currentTime.ToString("yyyy.MM.dd.HH.mm.ss");
     
         pathToLogs = Application.persistentDataPath + "/" + fileName + ".txt";
@@ -71,7 +79,7 @@ public class GameManager : MonoBehaviour
         using (StreamWriter dataOut = File.CreateText(pathToLogs))
         {
             dataOut.WriteLine("Task Initialised at: " + DateTime.Now.ToString());
-            dataOut.WriteLine("Trial Number", "Reward", "Response Time", "Response Chosen");
+            dataOut.WriteLine("Trial Number, Reward, Response Time, Response Chosen");
         }
         payoffs = gameData.GetComponent<Payoffs>();
         poissIntervals = gameData.GetComponent<Intervals>();
@@ -95,10 +103,22 @@ public class GameManager : MonoBehaviour
         // Check if startPosition has a valid integer value; if so use it. 
         if (!string.IsNullOrEmpty(startPosition.text) && int.TryParse(startPosition.text, out int startNumber))
         {
-            trialCount = startNumber;
+            trialStart = startNumber -1;
         }
+        if (!string.IsNullOrEmpty(nTrialsToRunAfterStart.text) && int.TryParse(nTrialsToRunAfterStart.text, out int nTrials))
+        {
+            trialDuration = nTrials;
+        } else
+        {
+            trialDuration = trialsPerBlock * blocksPerTask;
+        }
+
+        currentTrial = trialStart;
+
         startScreen.SetActive(false);
         StartCoroutine(ShowIntertrial());
+
+        Debug.Log(blockBreaks.isOn);
 
     }
 
@@ -109,31 +129,51 @@ public class GameManager : MonoBehaviour
         ActivateBandits(false);
         banditsGroup.SetActive(false);
         fixationCross.SetActive(true);
-
-        if (trial == trialsPerBlock)
+   
+        if (trialCount == trialDuration)
         {
-            if (block == blocksPerTask)
-            {
-                taskComplete = true;
-                EndTask();
-            }
-
-            if (blockBreaks.isOn && !taskComplete)
+            taskComplete = true;
+            EndTask();
+        }
+        if (trial == trialsPerBlock && blockBreaks.isOn && !taskComplete)
             {
                 onBlockBreak = true;
                 interBlockBreakScreen.SetActive(true);
                 yield return WaitForContinue();
                 interBlockBreakScreen.SetActive(false);
-            }
+            
         }
-
         if (!taskComplete)
         {
             float interval;
-            interval = (float)intervals[trialCount];
+            interval = (float)intervals[currentTrial];
             yield return new WaitForSeconds(interval);
             NextTrial();
         }
+    }
+
+    private void NextTrial()
+    {
+        if (trial == trialsPerBlock)
+        {
+            block++;
+            trial = 1;
+        }
+        else
+        {
+            trial++;
+        }
+
+        trialCount++;
+        currentTrial++;
+
+        BlockInput(false);
+        banditsGroup.SetActive(true);
+        ActivateBandits(true);
+        tStart = Time.time;
+        taskTimer = 0f;
+        inTrial = true;
+
     }
 
     IEnumerator WaitForContinue()
@@ -148,30 +188,6 @@ public class GameManager : MonoBehaviour
     public void ContinueTask() // Call when the UI button on the interblock screen is pressed
     {
         onBlockBreak = false;
-    }
-
-    private void NextTrial()
-    {
-       
-        if (trial == trialsPerBlock)
-        {
-            block++;
-            trial = 1;
-        }
-        else
-        {
-            trial++;
-        }
-       
-        trialCount++;
-
-        BlockInput(false);
-        banditsGroup.SetActive(true);
-        ActivateBandits(true);
-        tStart = Time.time;
-        taskTimer = 0f;
-        inTrial = true;
-       
     }
 
     public void ActivateBandits(bool flag)
@@ -236,7 +252,7 @@ public class GameManager : MonoBehaviour
     IEnumerator AnimateAndDisplay()
     {
         int bandit = (int)chosenBandit;
-        reward = intPayoffs[trialCount-1, bandit];
+        reward = intPayoffs[currentTrial-1, bandit];
 
         animate = true;  // bandit's OnChoice will catch this flag & change appearance
         yield return new WaitForSeconds(ANIMATE_TIME);
@@ -278,8 +294,10 @@ public class GameManager : MonoBehaviour
             bandit ++; // c# starts at 0
         }
 
-        string[] trialData = { trialCount.ToString(), reward.ToString(), responseTime.ToString(), bandit.ToString() };
+        string[] trialData = { currentTrial.ToString(), reward.ToString(), responseTime.ToString(), bandit.ToString() };
         string dataToWrite = string.Join(",", trialData);
+
+        Debug.Log(dataToWrite);
 
         using StreamWriter dataOut = File.AppendText(pathToLogs);
         dataOut.WriteLine(dataToWrite);
