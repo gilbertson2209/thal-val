@@ -1,7 +1,7 @@
 # Thal-Val
 
 Task to assess periprocedural effect of MRgFUS ablative thalamotomy on value based decision making
-Might not even work
+
 
 ## Description
 
