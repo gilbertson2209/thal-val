@@ -118,8 +118,6 @@ public class GameManager : MonoBehaviour
         startScreen.SetActive(false);
         StartCoroutine(ShowIntertrial());
 
-        Debug.Log(blockBreaks.isOn);
-
     }
 
     IEnumerator ShowIntertrial()
