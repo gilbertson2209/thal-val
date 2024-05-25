@@ -297,8 +297,10 @@ public class GameManager : MonoBehaviour
 
         Debug.Log(dataToWrite);
 
+        JsonUtility.ToJson(dataToWrite);
+
         using StreamWriter dataOut = File.AppendText(pathToLogs);
-        dataOut.WriteLine(dataToWrite);
+        dataOut.WriteLine(JsonUtility.ToJson(dataToWrite));
 
     }
 
