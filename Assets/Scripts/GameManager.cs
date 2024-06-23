@@ -100,24 +100,40 @@ public class GameManager : MonoBehaviour
 
     public void StartTask()
     {
-        // Check if startPosition has a valid integer value; if so use it. 
+        if (blockBreaks.isOn) // if the 'standard' toggle is on don't change trial start or duratuon 
+        {
+            currentTrial = trialStart;
+            trialDuration = trialsPerBlock * blocksPerTask;
+        }
+        else
+        {
+            CustomTaskSettings();
+         }
+    
+        startScreen.SetActive(false);
+        StartCoroutine(ShowIntertrial());
+
+    }
+
+    private void CustomTaskSettings()
+    {
+        // Check if startPosition is filled has a valid integer value; if so use it. 
         if (!string.IsNullOrEmpty(startPosition.text) && int.TryParse(startPosition.text, out int startNumber))
         {
-            trialStart = startNumber -1;
+            trialStart = startNumber - 1;
+        }
+        else
+        {
+            trialStart = 0;
         }
         if (!string.IsNullOrEmpty(nTrialsToRunAfterStart.text) && int.TryParse(nTrialsToRunAfterStart.text, out int nTrials))
         {
             trialDuration = nTrials;
-        } else
+        }
+        else
         {
             trialDuration = trialsPerBlock * blocksPerTask;
         }
-
-        currentTrial = trialStart;
-
-        startScreen.SetActive(false);
-        StartCoroutine(ShowIntertrial());
-
     }
 
     IEnumerator ShowIntertrial()
