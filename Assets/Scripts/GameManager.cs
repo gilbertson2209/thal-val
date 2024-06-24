@@ -184,7 +184,7 @@ public class GameManager : MonoBehaviour
         if (!taskComplete)
         {
             float interval;
-            interval = (float)intervals[currentTrial]; //TODO fix back to poiss 
+            interval = 1.0f; //TODO fix back to poiss 
             yield return new WaitForSeconds(interval);
             NextTrial();
         }

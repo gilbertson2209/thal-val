@@ -1463,10 +1463,10 @@ MonoBehaviour:
   trialCount: 0
   currentTrial: 0
   trialDuration: 0
-  ANIMATE_TIME: 3
+  ANIMATE_TIME: 1
   REWARD_DISP_TIME: 1
   TIME_LIMIT: 1.5
-  FAIL_DISP_TIME: 4.2
+  FAIL_DISP_TIME: 1
   taskTimer: 0
   inTrial: 0
   choiceMade: 0
