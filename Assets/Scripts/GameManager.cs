@@ -21,6 +21,11 @@ public class GameManager : MonoBehaviour
     public GameObject customSettings; //only need this for set show/ unshow reallu can remove 
     public Toggle blockBreaks;
 
+    // TODO horrible rush can't get togglegrp to work
+    public Toggle walk1;
+    public Toggle walk2;
+    public Toggle walk3; 
+
     public TMP_InputField startPosition;
     public TMP_InputField nTrialsToRunAfterStart;
 
@@ -87,7 +92,7 @@ public class GameManager : MonoBehaviour
 
     public void Start()
     {
-        intPayoffs = payoffs.intPayoffs;
+        
         intervals = poissIntervals.intervals; //TODO ran sort this 
         banditsTransform = banditsGroup.transform;
 
@@ -100,6 +105,25 @@ public class GameManager : MonoBehaviour
 
     public void StartTask()
     {
+        if (walk1.isOn)
+        {
+            intPayoffs = payoffs.intPayoffs1;
+            Debug.Log("Walk1");
+        }
+
+        if (walk2.isOn)
+        {
+            intPayoffs = payoffs.intPayoffs2;
+            Debug.Log("Walk2");
+        }
+
+        if (walk3.isOn)
+        {
+            intPayoffs = payoffs.intPayoffs3;
+            Debug.Log("Walk3");
+        }
+
+
         if (blockBreaks.isOn) // if the 'standard' toggle is on don't change trial start or duratuon 
         {
             currentTrial = trialStart;
@@ -160,7 +184,7 @@ public class GameManager : MonoBehaviour
         if (!taskComplete)
         {
             float interval;
-            interval = (float)intervals[currentTrial];
+            interval = (float)intervals[currentTrial]; //TODO fix back to poiss 
             yield return new WaitForSeconds(interval);
             NextTrial();
         }

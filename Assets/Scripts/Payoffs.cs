@@ -5,18 +5,24 @@ public class Payoffs : MonoBehaviour
 
 {
     // payoff variables 
-    public TextAsset payoffsFile; // assigned in inspector
-    public int[,] intPayoffs; 
+    public TextAsset payoffsFile1; // assigned in inspector
+    public TextAsset payoffsFile2; // assigned in inspector
+    public TextAsset payoffsFile3; // assigned in inspector
 
+    public int[,] intPayoffs1;
+    public int[,] intPayoffs2;
+    public int[,] intPayoffs3;
 
     private void Awake()
     // on awake; Payoffs need to be loaded from CSV
     {
-        LoadFromCSV();
+        intPayoffs1 = LoadFromCSV(payoffsFile1);
+        intPayoffs2 = LoadFromCSV(payoffsFile2);
+        intPayoffs3 = LoadFromCSV(payoffsFile3);
     }
 
 
-    private void LoadFromCSV()
+    private int[,] LoadFromCSV(TextAsset payoffsFile)
     // loading from original Daw CSV from Tom
     // data is floats; so loading here casts to int
     // into a 700 x 4 int array 
@@ -25,7 +31,7 @@ public class Payoffs : MonoBehaviour
         int rows = lines.Length;
         int columns = Bandits.GetNames(typeof(Bandits)).Length;
 
-        intPayoffs = new int[rows, columns];
+        int[,] intPayoffs = new int[rows, columns];
 
         for (int i = 0; i < rows - 1; i++)
         {
@@ -46,5 +52,6 @@ public class Payoffs : MonoBehaviour
         }
 
 
+        return intPayoffs;
     }
 }
