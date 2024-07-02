@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class Payoffs : MonoBehaviour
 
+ //Script to load in Daw Random Walks
 
 {
     // payoff variables 
@@ -9,16 +10,16 @@ public class Payoffs : MonoBehaviour
     public TextAsset payoffsFile2; // assigned in inspector
     public TextAsset payoffsFile3; // assigned in inspector
 
-    public int[,] intPayoffs1;
-    public int[,] intPayoffs2;
-    public int[,] intPayoffs3;
+    public int[,] intPayoffsWalk1;
+    public int[,] intPayoffsWalk2;
+    public int[,] intPayoffsWalk3;
 
     private void Awake()
     // on awake; Payoffs need to be loaded from CSV
     {
-        intPayoffs1 = LoadFromCSV(payoffsFile1);
-        intPayoffs2 = LoadFromCSV(payoffsFile2);
-        intPayoffs3 = LoadFromCSV(payoffsFile3);
+        intPayoffsWalk1 = LoadFromCSV(payoffsFile1);
+        intPayoffsWalk2 = LoadFromCSV(payoffsFile2);
+        intPayoffsWalk3 = LoadFromCSV(payoffsFile3);
     }
 
 

@@ -38,7 +38,7 @@ public class GameManager : MonoBehaviour
     public GameObject gameData;
     private Payoffs payoffs;
     private Intervals poissIntervals;
-    private int[,] intPayoffs;
+    public int[,] intPayoffs;
     private int [] intervals;
 
     //...Task vars (set public to alter in inspector)
@@ -105,21 +105,24 @@ public class GameManager : MonoBehaviour
 
     public void StartTask()
     {
+
+        Debug.Log(blockBreaks.isOn);
+
         if (walk1.isOn)
         {
-            intPayoffs = payoffs.intPayoffs1;
+            intPayoffs = payoffs.intPayoffsWalk1;
             Debug.Log("Walk1");
         }
 
         if (walk2.isOn)
         {
-            intPayoffs = payoffs.intPayoffs2;
+            intPayoffs = payoffs.intPayoffsWalk2;
             Debug.Log("Walk2");
         }
 
         if (walk3.isOn)
         {
-            intPayoffs = payoffs.intPayoffs3;
+            intPayoffs = payoffs.intPayoffsWalk3;
             Debug.Log("Walk3");
         }
 
@@ -128,37 +131,47 @@ public class GameManager : MonoBehaviour
         {
             currentTrial = trialStart;
             trialDuration = trialsPerBlock * blocksPerTask;
+            Debug.Log(blockBreaks.isOn);
         }
         else
         {
-            CustomTaskSettings();
-         }
+            Debug.Log(blockBreaks.isOn);
+            // Check if startPosition is filled has a valid integer value; if so use it. 
+            if (!string.IsNullOrEmpty(startPosition.text) && int.TryParse(startPosition.text, out int startNumber))
+            {
+                Debug.Log(startNumber.ToString());
+                Debug.Log(blockBreaks.isOn);
+                trialStart = startNumber - 1;
+            }
+            else
+            {
+                Debug.Log(blockBreaks.isOn);
+                trialStart = 0;
+            }
+            if (!string.IsNullOrEmpty(nTrialsToRunAfterStart.text) && int.TryParse(nTrialsToRunAfterStart.text, out int nTrials))
+            {
+                Debug.Log(nTrials.ToString());
+                Debug.Log(blockBreaks.isOn);
+                trialDuration = nTrials;
+            }
+            else
+            {
+                Debug.Log(blockBreaks.isOn);
+                trialDuration = trialsPerBlock * blocksPerTask;
+            }
+        }
+
+        currentTrial = trialStart;
+
+        Debug.Log(trialStart.ToString());
+        Debug.Log(trialDuration.ToString());
     
         startScreen.SetActive(false);
         StartCoroutine(ShowIntertrial());
 
     }
 
-    private void CustomTaskSettings()
-    {
-        // Check if startPosition is filled has a valid integer value; if so use it. 
-        if (!string.IsNullOrEmpty(startPosition.text) && int.TryParse(startPosition.text, out int startNumber))
-        {
-            trialStart = startNumber - 1;
-        }
-        else
-        {
-            trialStart = 0;
-        }
-        if (!string.IsNullOrEmpty(nTrialsToRunAfterStart.text) && int.TryParse(nTrialsToRunAfterStart.text, out int nTrials))
-        {
-            trialDuration = nTrials;
-        }
-        else
-        {
-            trialDuration = trialsPerBlock * blocksPerTask;
-        }
-    }
+   
 
     IEnumerator ShowIntertrial()
     {
@@ -338,9 +351,9 @@ public class GameManager : MonoBehaviour
         Debug.Log(dataToWrite);
 
         JsonUtility.ToJson(dataToWrite);
-
+        Debug.Log(JsonUtility.ToJson(dataToWrite));
         using StreamWriter dataOut = File.AppendText(pathToLogs);
-        dataOut.WriteLine(JsonUtility.ToJson(dataToWrite));
+        dataOut.WriteLine(dataToWrite);
 
     }
 
