@@ -18,10 +18,14 @@ public class GameManager : MonoBehaviour
     public GameObject failedTrial;
     public GameObject endScreen;
     public GameObject interBlockBreakScreen;
-    public GameObject customSettings; //only need this for set show/ unshow reallu can remove 
-    public Toggle blockBreaks;
+    public GameObject customSettings; //only need this for set show/ unshow reallu can remove
 
-    // TODO horrible rush can't get togglegrp to work
+
+    // Game Play Formats 
+    public Toggle blockBreaks;
+    public Toggle customFormat;
+
+    // move these into settings 
     public Toggle walk1;
     public Toggle walk2;
     public Toggle walk3; 
@@ -73,6 +77,10 @@ public class GameManager : MonoBehaviour
     private float responseTime;
     private string pathToLogs;
 
+
+
+    public TaskFormat taskFormat; 
+
     public void Awake()
     // references to scripts containing the game data 
     {
@@ -88,6 +96,10 @@ public class GameManager : MonoBehaviour
         }
         payoffs = gameData.GetComponent<Payoffs>();
         poissIntervals = gameData.GetComponent<Intervals>();
+
+
+        taskFormat = GetComponent<TaskFormat>();
+  
     }
 
     public void Start()
@@ -106,25 +118,33 @@ public class GameManager : MonoBehaviour
     public void StartTask()
     {
 
+        intPayoffs = taskFormat.SelectPayoffs(payoffs);
+
+
+        Debug.Log(intPayoffs[0, 0]);
+        Debug.Log(intPayoffs[0, 1]);
+        Debug.Log(intPayoffs[0, 2]);
+        Debug.Log(intPayoffs[0, 3]);
+
         Debug.Log(blockBreaks.isOn);
 
-        if (walk1.isOn)
-        {
-            intPayoffs = payoffs.intPayoffsWalk1;
-            Debug.Log("Walk1");
-        }
+        //if (walk1.isOn)
+        //{
+        //    intPayoffs = payoffs.intPayoffsWalk1;
+        //    Debug.Log("Walk1");
+        //}
 
-        if (walk2.isOn)
-        {
-            intPayoffs = payoffs.intPayoffsWalk2;
-            Debug.Log("Walk2");
-        }
+        //if (walk2.isOn)
+        //{
+        //    intPayoffs = payoffs.intPayoffsWalk2;
+        //    Debug.Log("Walk2");
+        //}
 
-        if (walk3.isOn)
-        {
-            intPayoffs = payoffs.intPayoffsWalk3;
-            Debug.Log("Walk3");
-        }
+        //if (walk3.isOn)
+        //{
+        //    intPayoffs = payoffs.intPayoffsWalk3;
+        //    Debug.Log("Walk3");
+        //}
 
 
         if (blockBreaks.isOn) // if the 'standard' toggle is on don't change trial start or duratuon 

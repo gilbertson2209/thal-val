@@ -1449,6 +1449,7 @@ MonoBehaviour:
   interBlockBreakScreen: {fileID: 1708373526}
   customSettings: {fileID: 1280682897}
   blockBreaks: {fileID: 730948195}
+  customFormat: {fileID: 0}
   walk1: {fileID: 729864951}
   walk2: {fileID: 197313659}
   walk3: {fileID: 1931287454}
@@ -1474,6 +1475,7 @@ MonoBehaviour:
   showReward: 0
   chosenBandit: 0
   reward: 0
+  taskFormat: {fileID: 0}
 --- !u!1 &417749879
 GameObject:
   m_ObjectHideFlags: 0
@@ -7044,9 +7046,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 1375710301030837133}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 039d915808fea44b5a23a456186e8bcb, type: 3}
+  m_Script: {fileID: 11500000, guid: b50536e9ac49a478080ba7f89c5de1bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  blockBreaks: {fileID: 0}
+  walk1: {fileID: 729864951}
+  walk2: {fileID: 197313659}
+  walk3: {fileID: 1931287454}
+  firstTrial: {fileID: 1263469175}
+  lastTrial: {fileID: 1145038299}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
