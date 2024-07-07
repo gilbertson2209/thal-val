@@ -13,6 +13,7 @@ public class Trial : MonoBehaviour
     public GameObject fixationCross;
 
     public bool inTrial = false;
+    public bool trialComplete = false;
     public bool choiceMade = false;
     public bool animate = false;
     public bool showReward = false;
@@ -23,9 +24,6 @@ public class Trial : MonoBehaviour
     public float timeElapsed = 0f;
     public int reward; 
 
-
-
-
     private void Awake()
     {
         gameManager = GetComponent<GameManager>();
@@ -35,10 +33,11 @@ public class Trial : MonoBehaviour
 
     public void NewTrial(int[] trialPayoffs)
     {
-        Debug.Log("In New Trial");
+        Debug.Log("In New Trial" + trialPayoffs.ToString());
         this.payoffs = trialPayoffs;
         timeElapsed = 0f;
         reward = 0;
+        trialComplete = false; 
         choiceMade = false;
         inTrial = true;
         ShowBandits();
@@ -53,6 +52,7 @@ public class Trial : MonoBehaviour
 
     private void ShowFailTrial()
     {
+        showReward = false;
         fixationCross.SetActive(false);
         failedTrial.SetActive(true);
         allBanditsManager.BlockInput(true);
@@ -60,18 +60,19 @@ public class Trial : MonoBehaviour
 
     IEnumerator FailTrial()
     {
+
         inTrial = false;
-        showReward = false;
         ShowFailTrial();
         yield return new WaitForSeconds(taskSettings.failTrialDisplayTime);
-        
+        EndTrial();
     }
 
     public void EndTrial()
     {
-        choiceMade = false;
-        //write Data 
-        // back to GM to show Intertrail 
+        allBanditsManager.BlockInput(true);
+        allBanditsManager.ActivateBandits(false);
+        inTrial = false;
+        trialComplete = true;
     }
 
     public void Update()
@@ -82,6 +83,7 @@ public class Trial : MonoBehaviour
             timeElapsed += Time.deltaTime;
             if (timeElapsed >= taskSettings.trialTimeLimit)
             {
+                Debug.Log("IN UPDATE TO FAIL TRIAL" + Time.time.ToString());
                 StartCoroutine(FailTrial());
             }
         }
@@ -90,7 +92,6 @@ public class Trial : MonoBehaviour
     public void OnChoice(string banditName)
     // called from the 'OnChoice' script attached to each bandits
     {
-        inTrial = false;
         choiceMade = true;
         fixationCross.SetActive(false);
         Enum.TryParse(banditName, out chosenBandit);

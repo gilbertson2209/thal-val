@@ -105,27 +105,26 @@ public class GameManager : MonoBehaviour
     {
         int trialCount = 0;
 
-        while (currentTrial < lastTrial)
+        while (currentTrial < (lastTrial + 1))
         {
             // Execute the current trial
              // Or however you instantiate your Trial
             // start the trial
-            Debug.Log("Current Trial " + currentTrial.ToString());
-            Debug.Log("Trial Count" + currentTrial.ToString());
+            Debug.Log("Current Trial " + currentTrial.ToString() + "Trial Count" + trialCount.ToString());
             Debug.Log("Standard Toggle " + standardToggle.isOn);
             yield return StartCoroutine(Intertrial());
-            yield return new WaitForSeconds(4);
-            //yield return StartCoroutine(trial.ExecuteTrial(3.0f, 1.0f, intPayoffs, currentTrial, Bandits.Yellow));
-         
-            trial.NewTrial(new int[] { 1, 2, 3, 4 });
-         
-            // Increment the trial counter
 
-            while (trial.inTrial)
+            int[] trialPayoffs = GetTrialPayoffs(intPayoffs, currentTrial);
+            trial.inTrial = true;
+            trial.NewTrial(trialPayoffs);
+
+            Debug.Log(trial.inTrial.ToString() + "  " + Time.time.ToString());
+         
+            while (trial.inTrial) //hold execution until trial is complete
             {
                 yield return null;
             }
-
+            Debug.Log("after trial" + currentTrial.ToString() + "  " + Time.time.ToString());
             int chosen = 0;
             if (!trial.choiceMade)
             {
@@ -136,14 +135,12 @@ public class GameManager : MonoBehaviour
             string[] trialData = { currentTrial.ToString(), trial.reward.ToString(), trial.timeElapsed.ToString(), chosen.ToString() };
             string dataToWrite = string.Join(",", trialData);
             Debug.Log(dataToWrite);
+
             currentTrial++;
             trialCount++;
             // Check to see if in interblock break; if so break. 
             if (trialCount >= taskSettings.trialsPerBlock)
-            {
-                Debug.Log("In trial count = taskSettings.trialsPerBlock");
-                // trialCount = 0; // Reset for next block
-
+            { 
                 if (standardToggle.isOn && currentTrial < lastTrial)
                 {
                     onBlockBreak = true;
@@ -155,7 +152,6 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // Task complete
         endScreen.SetActive(true);
     }
 
@@ -168,6 +164,7 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(interval);
 
     }
+
     public void ShowIntertrial()
     {
         allBanditsManager.BlockInput(true);
@@ -175,7 +172,6 @@ public class GameManager : MonoBehaviour
         failedTrial.SetActive(false);
         fixationCross.SetActive(true);
     }
-
 
     IEnumerator WaitForContinue()
     {
@@ -193,6 +189,20 @@ public class GameManager : MonoBehaviour
     public void EndTask()
     {
         endScreen.SetActive(true);
+    }
+
+    private int[] GetTrialPayoffs(int[,] intPayoffs, int currentTrial)
+    {
+        int rowIndex = currentTrial-1;
+        int numColumns = intPayoffs.GetLength(1); // Get the number of columns
+        int[] payoffs = new int[numColumns];
+
+        for (int i = 0; i < numColumns; i++)
+        {
+            payoffs[i] = intPayoffs[rowIndex, i];
+        }
+
+        return payoffs;
     }
 
     //private void SaveData()
