@@ -24,11 +24,9 @@ public class OnChoice : MonoBehaviour
     private void Awake()
     {
         banditName = gameObject.name;
-    
         chosenScreen = gameObject.transform.Find("Chosen").gameObject;
         banditScreen = gameObject.transform.Find("BanditScreen").gameObject;
         handle = gameObject.transform.Find("Handle").gameObject;
-
         rewardNotification = banditScreen.transform.Find("RewardNotification").GetComponent<TextMeshPro>();
     }
 
@@ -56,8 +54,8 @@ public class OnChoice : MonoBehaviour
     {
         if (isChosen)
         {
-            bool animate = gameManager.animate;
-            bool showReward = gameManager.showReward;
+            bool animate = gameManager.trial.animate;
+            bool showReward = gameManager.trial.showReward;
 
             float step = rotationSpeed * Time.deltaTime;  // Code to move the handle. 
             handle.transform.Rotate(Vector3.back * step);
@@ -76,7 +74,7 @@ public class OnChoice : MonoBehaviour
     void OnMouseDown()
     {
         
-        gameManager.OnChoice(banditName); // alert gameManager that this Bandit is clicked
+        gameManager.trial.OnChoice(banditName); // alert trial instance that this Bandit is clicked
         isChosen = true;
         banditScreen.SetActive(false);
         chosenScreen.SetActive(true);
@@ -87,7 +85,7 @@ public class OnChoice : MonoBehaviour
     {
         banditScreen.SetActive(true);
         chosenScreen.SetActive(false);
-        int reward = gameManager.reward;
+        int reward = gameManager.trial.reward;
         rewardNotification.text = "+" + reward.ToString() + "<br> Points";
     }
 }

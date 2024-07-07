@@ -1448,34 +1448,14 @@ MonoBehaviour:
   endScreen: {fileID: 1464621836}
   interBlockBreakScreen: {fileID: 1708373526}
   customSettings: {fileID: 1280682897}
-  blockBreaks: {fileID: 730948195}
-  customFormat: {fileID: 0}
-  walk1: {fileID: 729864951}
-  walk2: {fileID: 197313659}
-  walk3: {fileID: 1931287454}
-  startPosition: {fileID: 1263469175}
-  nTrialsToRunAfterStart: {fileID: 1145038299}
-  banditsGroup: {fileID: 1829408013}
   fixationCross: {fileID: 1882213107}
+  standardToggle: {fileID: 730948195}
+  customToggle: {fileID: 912264442}
+  trial: {fileID: 0}
+  allBandits: {fileID: 1829408013}
   gameData: {fileID: 1190191024}
-  trialsPerBlock: 75
-  blocksPerTask: 4
-  trialStart: 0
-  trialCount: 0
-  currentTrial: 0
-  trialDuration: 0
-  ANIMATE_TIME: 1
-  REWARD_DISP_TIME: 1
-  TIME_LIMIT: 1.5
-  FAIL_DISP_TIME: 1
-  taskTimer: 0
-  inTrial: 0
-  choiceMade: 0
-  animate: 0
-  showReward: 0
+  pathToLogs: 
   chosenBandit: 0
-  reward: 0
-  taskFormat: {fileID: 0}
 --- !u!1 &417749879
 GameObject:
   m_ObjectHideFlags: 0
@@ -5966,6 +5946,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1829408014}
+  - component: {fileID: 1829408015}
   m_Layer: 0
   m_Name: Bandits
   m_TagString: Untagged
@@ -5992,6 +5973,18 @@ Transform:
   - {fileID: 1469285928}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1829408015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1829408013}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5980aa5bfe6d14a3faa6e0cfc85435bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1865885525
 GameObject:
   m_ObjectHideFlags: 0
@@ -6954,6 +6947,8 @@ GameObject:
   - component: {fileID: 6577042957898554505}
   - component: {fileID: 355813354}
   - component: {fileID: 6577042957898554506}
+  - component: {fileID: 6577042957898554507}
+  - component: {fileID: 6577042957898554508}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -7049,12 +7044,54 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b50536e9ac49a478080ba7f89c5de1bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blockBreaks: {fileID: 0}
   walk1: {fileID: 729864951}
   walk2: {fileID: 197313659}
   walk3: {fileID: 1931287454}
   firstTrial: {fileID: 1263469175}
   lastTrial: {fileID: 1145038299}
+--- !u!114 &6577042957898554507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1375710301030837133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59dfa4e91c63042a4a2c866a54c215a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  trialsPerBlock: 3
+  blocksPerTask: 4
+  animateTime: 3
+  rewardDisplayTime: 1
+  trialTimeLimit: 1.5
+  failTrialDisplayTime: 4.2
+--- !u!114 &6577042957898554508
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1375710301030837133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e353209621184369bc29039d111706e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameManager: {fileID: 355813354}
+  allBandits: {fileID: 1829408013}
+  allBanditsManager: {fileID: 0}
+  failedTrial: {fileID: 1475086061}
+  fixationCross: {fileID: 1882213107}
+  inTrial: 0
+  choiceMade: 0
+  animate: 0
+  showReward: 0
+  chosenBandit: 0
+  timeElapsed: 0
+  reward: 0
+  taskSettings: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

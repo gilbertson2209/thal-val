@@ -32,7 +32,8 @@ public class Payoffs : MonoBehaviour
         int rows = lines.Length;
         int columns = Bandits.GetNames(typeof(Bandits)).Length;
 
-        int[,] intPayoffs = new int[rows, columns];
+
+        int[,] intPayoffs = new int[rows-1, columns];
 
         for (int i = 0; i < rows - 1; i++)
         {
@@ -50,6 +51,8 @@ public class Payoffs : MonoBehaviour
                     Debug.LogError("Failed to parse value at row " + (i + 1) + ", column " + (j + 1));
                 }
             }
+
+
         }
 
 
