@@ -107,34 +107,26 @@ public class GameManager : MonoBehaviour
 
         while (currentTrial < (lastTrial + 1))
         {
-            // Execute the current trial
-             // Or however you instantiate your Trial
-            // start the trial
-            Debug.Log("Current Trial " + currentTrial.ToString() + "Trial Count" + trialCount.ToString());
-            Debug.Log("Standard Toggle " + standardToggle.isOn);
+            // Start the intertrial 
             yield return StartCoroutine(Intertrial());
 
             int[] trialPayoffs = GetTrialPayoffs(intPayoffs, currentTrial);
-            trial.inTrial = true;
             trial.NewTrial(trialPayoffs);
-
-            Debug.Log(trial.inTrial.ToString() + "  " + Time.time.ToString());
          
-            while (trial.inTrial) //hold execution until trial is complete
+            while (!trial.trialComplete)
             {
                 yield return null;
             }
-            Debug.Log("after trial" + currentTrial.ToString() + "  " + Time.time.ToString());
+  
             int chosen = 0;
-            if (!trial.choiceMade)
+            if (trial.choiceMade)
             {
                 chosen = (int)trial.chosenBandit;
-                chosen++;
+                chosen++; // leaving '0' as 'no choice' and mapping 0->1,1->2 etc for YBRG 
             }
-                
-            string[] trialData = { currentTrial.ToString(), trial.reward.ToString(), trial.timeElapsed.ToString(), chosen.ToString() };
-            string dataToWrite = string.Join(",", trialData);
-            Debug.Log(dataToWrite);
+            
+            string[] trialData = {currentTrial.ToString(), trial.reward.ToString(), trial.timeElapsed.ToString(), chosen.ToString() };
+            SaveData(trialData);
 
             currentTrial++;
             trialCount++;
@@ -205,25 +197,13 @@ public class GameManager : MonoBehaviour
         return payoffs;
     }
 
-    //private void SaveData()
-    //{
-    //    int bandit = 0; 
-    //    //if (choiceMade) {
-    //    //    bandit = (int)chosenBandit;
-    //    //    bandit ++; // c# starts at 0
-    //    //}
-
-    //    string[] trialData = { currentTrial.ToString(), reward.ToString(), responseTime.ToString(), bandit.ToString() };
-    //    string dataToWrite = string.Join(",", trialData);
-
-    //    Debug.Log(dataToWrite);
-
-    //    JsonUtility.ToJson(dataToWrite);
-    //    Debug.Log(JsonUtility.ToJson(dataToWrite));
-    //    using StreamWriter dataOut = File.AppendText(pathToLogs);
-    //    dataOut.WriteLine(dataToWrite);
-
-    //}
+    private void SaveData(string [] trialResults)
+    {
+        string dataToWrite = string.Join(",", trialResults);
+        Debug.Log(dataToWrite);
+        using StreamWriter dataOut = File.AppendText(pathToLogs);
+        dataOut.WriteLine(dataToWrite);
+    }
 
     public void RestartGame()
     {

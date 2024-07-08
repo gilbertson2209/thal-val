@@ -33,7 +33,6 @@ public class Trial : MonoBehaviour
 
     public void NewTrial(int[] trialPayoffs)
     {
-        Debug.Log("In New Trial" + trialPayoffs.ToString());
         this.payoffs = trialPayoffs;
         timeElapsed = 0f;
         reward = 0;
@@ -60,7 +59,6 @@ public class Trial : MonoBehaviour
 
     IEnumerator FailTrial()
     {
-
         inTrial = false;
         ShowFailTrial();
         yield return new WaitForSeconds(taskSettings.failTrialDisplayTime);
@@ -83,7 +81,6 @@ public class Trial : MonoBehaviour
             timeElapsed += Time.deltaTime;
             if (timeElapsed >= taskSettings.trialTimeLimit)
             {
-                Debug.Log("IN UPDATE TO FAIL TRIAL" + Time.time.ToString());
                 StartCoroutine(FailTrial());
             }
         }
