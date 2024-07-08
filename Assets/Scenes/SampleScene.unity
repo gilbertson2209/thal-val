@@ -6926,8 +6926,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59dfa4e91c63042a4a2c866a54c215a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  trialsPerBlock: 5
-  blocksPerTask: 3
+  trialsPerBlock: 75
+  blocksPerTask: 4
   animateTime: 3
   rewardDisplayTime: 1
   trialTimeLimit: 1.5

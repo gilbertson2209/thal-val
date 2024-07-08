@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class TaskSettings : MonoBehaviour
 {
-    public int trialsPerBlock = 5; //should be 75; gilmour et al 
+    public int trialsPerBlock = 75; //should be 75; gilmour et al 
     public int blocksPerTask = 4; // should be 4; gilmour et al
     public float animateTime = 3.0f; // Daw, Cortical Substrates Supplementary Methods 
     public float rewardDisplayTime = 1.0f; // Daw, Cortical Substrates ^ 
