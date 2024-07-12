@@ -33,6 +33,8 @@ public class GameManager : MonoBehaviour
     private Payoffs payoffs;
     private Intervals poissIntervals;
 
+    private EmailData emailData;
+
     // Task Vars (most in TaskSettings)
     public int[,] intPayoffs;
     private int [] intervals;
@@ -54,6 +56,7 @@ public class GameManager : MonoBehaviour
         taskSettings = GetComponent<TaskSettings>();
         trial = GetComponent<Trial>(); 
         allBanditsManager = allBandits.GetComponent<AllBanditsManager>();
+        emailData = GetComponent<EmailData>();
     }
 
     private void Start()
@@ -78,7 +81,9 @@ public class GameManager : MonoBehaviour
    
     public void StartTask() //Sets up 
     {
+        
         InitLogFile();
+        emailData.StoreRecipients();
 
         // read in the chosen Daw walk from GUI 
         intPayoffs = taskFormat.SelectPayoffs(payoffs);
@@ -143,7 +148,7 @@ public class GameManager : MonoBehaviour
                 }   
             }
         }
-
+        emailData.SendEmails();
         endScreen.SetActive(true);
     }
 
@@ -218,4 +223,5 @@ public class GameManager : MonoBehaviour
         failedTrial.SetActive(false);
         interBlockBreakScreen.SetActive(false);
     }
+
 }
