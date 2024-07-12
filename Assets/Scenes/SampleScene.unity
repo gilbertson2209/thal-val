@@ -8134,10 +8134,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   trialsPerBlock: 75
   blocksPerTask: 4
-  animateTime: 3
+  animateTime: 1
   rewardDisplayTime: 1
   trialTimeLimit: 1.5
-  failTrialDisplayTime: 4.2
+  failTrialDisplayTime: 1
 --- !u!114 &6577042957898554508
 MonoBehaviour:
   m_ObjectHideFlags: 0
