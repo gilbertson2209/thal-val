@@ -157,8 +157,7 @@ public class GameManager : MonoBehaviour
     {
         ShowIntertrial();
         float interval;
-        //interval = (float)intervals[currentTrial];
-        interval = 1.0f;
+        interval = (float)intervals[currentTrial];
         yield return new WaitForSeconds(interval);
 
     }

@@ -80,7 +80,7 @@ public class EmailData : MonoBehaviour
 
         mail.From = new MailAddress(senderEmail);
         mail.To.Add(recipientEmail);
-        mail.Subject = "Data from Bandit";
+        mail.Subject = "WINDOWS (Matthias) Data from Bandit";
         mail.Body = logData;
 
         SmtpClient smtpServer = new SmtpClient("smtp.gmail.com");
