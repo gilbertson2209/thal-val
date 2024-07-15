@@ -24,16 +24,16 @@ Unity 2022.3.16f1; 2D (URP)
 Follow Unity Build Processes but just ask if help needed; always happy.
 
 ### Logs, Data
-Currently the device builds will read out data to the [Unity Application Persistent Data Path](https://docs.unity3d.com/ScriptReference/Application-persistentDataPath.html); WebGl results are written onto the browser console. Looking to improve this in a low tech way (eg just read out something sensible to idbfs).
+Data read out to the [Unity Application Persistent Data Path](https://docs.unity3d.com/ScriptReference/Application-persistentDataPath.html); WebGl results are written onto the browser console. Looking to improve this in a low tech way (eg just read out something sensible to idbfs).
 #### MRiOS & Windows builds: Emailing Responses
 These branches have scripts that should email the data at the end of the task to the experimenter.
-The timing and play parameters may be altered in these branches compared to original so be careful.
+(The timing and play parameters may be altered in these branches compared to original).
 
-To do this with minimal effort, open a new gmail account and add 2-factor auth. Once done, **SIGN IN and head to** https://myaccount.google.com/apppasswords where you can create an app password. In the inspector, Email Data should have empty fields - use this email and this 'app password' (not the gmail account password); or hard code them.
+To do this with minimal effort, open a new gmail account and add 2-factor auth. Once done, **SIGN IN TO THE NEW ACCOUNT then  head to** https://myaccount.google.com/apppasswords where you can create an app password. The Email Data (script) component attached to GameManager has empty fields in the inspector- fill with this new email and this 'app password' (not the gmail account password).
 
 ## Help
-For code/ build get in touch with developer; via [@i-brnrd](https://github.com/i-brnrd) on here or via [University of Dundee](https://www.dundee.ac.uk/people/isla-barnard).
-For details on how to use task in research, try [here](https://www.dundee.ac.uk/people/tom-gilbertson) instead.
+For code/ build [@i-brnrd](https://github.com/i-brnrd) on here or via [University of Dundee](https://www.dundee.ac.uk/people/isla-barnard).
+For use of it try [here](https://www.dundee.ac.uk/people/tom-gilbertson) instead.
 
 ## Authors
 Isla Barnard (developer)
