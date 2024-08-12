@@ -3,6 +3,7 @@ using System.Net.Mail;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using System.IO;
 
@@ -28,11 +29,18 @@ public class EmailData : MonoBehaviour
         gameManager = GetComponent<GameManager>();
     }
 
+    void Start()
+    {
+        
+        recipientInput1.text = defaultRecipientEmail;
+    }
 
-    public void StoreRecipients()
+public void StoreRecipients()
     {
         recipient1 = recipientInput1.text;
         recipient2 = recipientInput2.text;
+        Debug.Log(recipient1);
+        Debug.Log(recipient2);
     }
 
 

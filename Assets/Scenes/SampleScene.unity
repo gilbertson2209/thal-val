@@ -3164,7 +3164,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_IsOn: 1
+  m_IsOn: 0
 --- !u!1 &785167329
 GameObject:
   m_ObjectHideFlags: 0
@@ -3443,7 +3443,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_IsOn: 0
+  m_IsOn: 1
 --- !u!1 &992572614
 GameObject:
   m_ObjectHideFlags: 0
@@ -8158,7 +8158,7 @@ MonoBehaviour:
   fixationCross: {fileID: 1882213107}
   inTrial: 0
   trialComplete: 0
-  choiceMade: 0
+  choiceMade: 1
   animate: 0
   showReward: 0
   chosenBandit: 0
