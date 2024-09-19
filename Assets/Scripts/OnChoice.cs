@@ -69,7 +69,22 @@ public class OnChoice : MonoBehaviour
             }
 
         }
+        HandleKeyPress();
     }
+
+    private void HandleKeyPress()
+    {
+        // Map keys to bandit names
+        if ((banditName == "Yellow" && Input.GetKeyDown(KeyCode.Q)) ||
+            (banditName == "Blue" && Input.GetKeyDown(KeyCode.O)) ||
+            (banditName == "Red" && Input.GetKeyDown(KeyCode.A)) ||
+            (banditName == "Green" && Input.GetKeyDown(KeyCode.K)))
+        {
+            // Trigger the same actions as clicking the bandit
+            OnMouseDown();
+        }
+    }
+
 
     void OnMouseDown()
     {

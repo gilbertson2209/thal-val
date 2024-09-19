@@ -8177,9 +8177,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameManager: {fileID: 0}
-  senderEmail: 
-  senderPassword: 
-  defaultRecipientEmail: 
+  senderEmail: rl.task.results@gmail.com
+  senderPassword: ncto slst ibov booi
+  defaultRecipientEmail: ibarnard001@dundee.ac.uk
   recipientInput1: {fileID: 1543655088}
   recipientInput2: {fileID: 1018846367}
 --- !u!1660057539 &9223372036854775807
