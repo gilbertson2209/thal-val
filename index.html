@@ -34,12 +34,6 @@
     var fullscreenButton = document.querySelector("#unity-fullscreen-button");
     var warningBanner = document.querySelector("#unity-warning");
 
-    // Shows a temporary message banner/ribbon for a few seconds, or
-    // a permanent error message on top of the canvas if type=='error'.
-    // If type=='warning', a yellow highlight color is used.
-    // Modify or remove this function to customize the visually presented
-    // way that non-critical warnings and error messages are presented to the
-    // user.
     function unityShowBanner(msg, type) {
       function updateBannerVisibility() {
         warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
@@ -71,15 +65,8 @@
       showBanner: unityShowBanner,
     };
 
-    // By default, Unity keeps WebGL canvas render target size matched with
-    // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-    // Set this to false if you want to decouple this synchronization from
-    // happening inside the engine, and you would instead like to size up
-    // the canvas DOM size and WebGL render target sizes yourself.
-    // config.matchWebGLToCanvasSize = false;
-
     if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-      // Mobile device style: fill the whole browser client area with the game canvas:
+      // Mobile device style
 
       var meta = document.createElement('meta');
       meta.name = 'viewport';
@@ -88,15 +75,66 @@
       container.className = "unity-mobile";
       canvas.className = "unity-mobile";
 
-      // To lower canvas resolution on mobile devices to gain some
-      // performance, uncomment the following line:
-      // config.devicePixelRatio = 1;
+      // Force landscape: rotate the container when in portrait orientation
+      var style = document.createElement('style');
+      style.textContent = `
+        @media screen and (orientation: portrait) {
+          body {
+            margin: 0;
+            overflow: hidden;
+          }
+          #unity-container {
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            width: 100vh !important;
+            height: 100vw !important;
+            transform: rotate(90deg);
+            transform-origin: top left;
+            margin-left: 100vw;
+          }
+          #unity-canvas {
+            width: 100% !important;
+            height: 100% !important;
+          }
+          #unity-footer {
+            display: none;
+          }
+        }
+        @media screen and (orientation: landscape) {
+          body {
+            margin: 0;
+            overflow: hidden;
+          }
+          #unity-container {
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            width: 100vw !important;
+            height: 100vh !important;
+          }
+          #unity-canvas {
+            width: 100% !important;
+            height: 100% !important;
+          }
+          #unity-footer {
+            display: none;
+          }
+        }
+      `;
+      document.head.appendChild(style);
 
-      // Ensure canvas fits width and maintains aspect ratio
       function resizeCanvas() {
+        var isPortrait = window.innerHeight > window.innerWidth;
+        var screenW = isPortrait ? window.innerHeight : window.innerWidth;
+        var screenH = isPortrait ? window.innerWidth : window.innerHeight;
         var aspectRatio = 960 / 600;
-        var width = window.innerWidth;
-        var height = window.innerWidth / aspectRatio;
+        var width = screenW;
+        var height = screenW / aspectRatio;
+        if (height > screenH) {
+          height = screenH;
+          width = screenH * aspectRatio;
+        }
         canvas.style.width = width + 'px';
         canvas.style.height = height + 'px';
       }
@@ -104,10 +142,8 @@
       window.addEventListener('resize', resizeCanvas);
       resizeCanvas();
 
-
     } else {
-      // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
-
+      // Desktop style
       canvas.style.width = "960px";
       canvas.style.height = "600px";
     }
